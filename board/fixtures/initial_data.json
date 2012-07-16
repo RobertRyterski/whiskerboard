@@ -1,0 +1,35 @@
+[
+  {
+    "model": "board.status",
+    "pk": 1,
+    "fields": {
+      "name": "Down",
+      "slug": "down", 
+      "image": "cross-circle", 
+      "severity": 40,
+      "description": "The service is currently down"
+    }
+  },
+  {
+    "model": "board.status",
+    "pk": 2,
+    "fields": {
+      "name": "Up",
+      "slug": "up", 
+      "image": "tick-circle", 
+      "severity": 10,
+      "description": "The service is up"
+    }
+  },
+  {
+    "model": "board.status",
+    "pk": 3,
+    "fields": {
+      "name": "Warning",
+      "slug": "warning", 
+      "image": "exclamation", 
+      "severity": 30,
+      "description": "The service is experiencing intermittent problems"
+    }
+  }
+]
