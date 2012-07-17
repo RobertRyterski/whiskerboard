@@ -9,7 +9,7 @@ It is heavily based on [Stashboard](http://www.stashboard.org/). Unlike Stashboa
 $ git clone git@github.com:RobertRyterski/whiskerboard.git
 $ cd whiskerboard
 $ sudo pip install -r requirements.txt
-$ echo "SECRET_KEY = 'EnterABunchOfRandomCharactersHere'" > settings/local.py
+$ echo "SECRET_KEY = 'EnterABunchOfRandomCharactersHere'" > example/settings/local.py
 $ ./manage.py syncdb
 $ ./manage.py runserver
 ```
