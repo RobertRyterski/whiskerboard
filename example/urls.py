@@ -5,8 +5,8 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # simply include the whiskerboard URLs file
-    url(r'^/', include('whiskerboard.urls')),
+    url(r'^/?', include('whiskerboard.urls')),
 
     # Make admin site usable
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/?', include(admin.site.urls)),
 )
