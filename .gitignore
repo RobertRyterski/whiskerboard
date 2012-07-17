@@ -2,6 +2,6 @@
 static_root/
 *.un~
 .*.sw*
-settings/local.py
+*/settings/local.py
 .DS_Store
 whiskerboard.sqlite3

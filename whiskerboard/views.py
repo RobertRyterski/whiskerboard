@@ -1,4 +1,4 @@
-from board.models import Service, Status
+from .models import Service, Status
 import datetime
 from django.views.generic import ListView, DetailView
 
@@ -22,7 +22,7 @@ def get_past_days(num):
 class IndexView(BoardMixin, ListView):
     context_object_name = 'services'
     queryset = Service.objects.all()
-    template_name = 'board/index.html'
+    template_name = 'whiskerboard/index.html'
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)

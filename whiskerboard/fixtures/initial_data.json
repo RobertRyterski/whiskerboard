@@ -1,6 +1,6 @@
 [
   {
-    "model": "board.status",
+    "model": "whiskerboard.status",
     "pk": 1,
     "fields": {
       "name": "Down",
@@ -11,7 +11,7 @@
     }
   },
   {
-    "model": "board.status",
+    "model": "whiskerboard.status",
     "pk": 2,
     "fields": {
       "name": "Up",
@@ -22,7 +22,7 @@
     }
   },
   {
-    "model": "board.status",
+    "model": "whiskerboard.status",
     "pk": 3,
     "fields": {
       "name": "Warning",

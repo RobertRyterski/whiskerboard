@@ -1,36 +1,29 @@
 import os
 
-PROJECT_PATH = os.path.abspath(os.path.split(__file__)[0] + "/..")
+PROJECT_PATH = os.path.abspath(os.path.split(__file__)[0] + "/../..")
 
 ######################################
 # Main
 ######################################
 
 DEBUG = True
-ROOT_URLCONF = 'urls'
 SITE_ID = 1
+ROOT_URLCONF = 'example.urls'
+WSGI_APPLICATION = 'example.wsgi.application'
 
 ######################################
 # Apps
 ######################################
 
 INSTALLED_APPS = (
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'board',
-)
-
-MIDDLEWARE_CLASSES = (
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.contrib.admin',
+    'whiskerboard',
 )
 
 ######################################
@@ -49,15 +42,23 @@ DATABASES = {
     }
 }
 
+MIDDLEWARE_CLASSES = (
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+)
+
 ######################################
-# Localisation
+# Localization
 ######################################
 
-TIME_ZONE = 'Europe/London'
-LANGUAGE_CODE = 'en-gb'
+TIME_ZONE = 'America/Chicago'
+LANGUAGE_CODE = 'en-us'
 USE_I18N = True
 USE_L10N = True
-
+USE_TZ = True
 
 ######################################
 # Logging
@@ -87,9 +88,8 @@ LOGGING = {
     }
 }
 
-
 ######################################
-# Media/Static
+# Media / Static
 ######################################
 
 MEDIA_ROOT = os.path.join(PROJECT_PATH, 'data')
@@ -100,10 +100,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     str(os.path.join(PROJECT_PATH, 'static')),
 )
-ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'
 
-# List of finder classes that know how to find static files in
-# various locations.
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
@@ -119,19 +116,9 @@ TEMPLATE_DEBUG = DEBUG
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
+#     'django.template.loaders.eggs.Loader',
 )
 
 TEMPLATE_DIRS = (
     os.path.join(PROJECT_PATH, 'templates'),
 )
-
-TEMPLATE_CONTEXT_PROCESSORS = (
-    "django.contrib.auth.context_processors.auth",
-    "django.core.context_processors.debug",
-    "django.core.context_processors.i18n",
-    "django.core.context_processors.media",
-    "django.core.context_processors.static",
-    "django.contrib.messages.context_processors.messages",
-    'board.context_processors.current_site',
-)
-
