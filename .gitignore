@@ -1,6 +1,11 @@
-*.pyc
+build/
+dist/
+*.egg-info/
 static_root/
+*.pyc
 *.un~
 .*.sw*
 .DS_Store
 whiskerboard.sqlite3
+.project
+.pydevproject
