@@ -8,7 +8,7 @@ it uses vanilla Django, so you aren't stuck using Google App Engine.
 ## Quick start guide
 ```sh
 $ git clone git@github.com:RobertRyterski/whiskerboard.git
-$ cd whiskerboard
+$ cd whiskerboard/example
 $ sudo pip install -r requirements.txt
 $ python manage.py syncdb
 $ python manage.py runserver

@@ -95,16 +95,13 @@ LOGGING = {
 MEDIA_ROOT = os.path.join(PROJECT_PATH, 'data')
 MEDIA_URL = '/media/'
 
-STATIC_ROOT = os.path.join(PROJECT_PATH, 'static_root')
+STATIC_ROOT = os.path.join(PROJECT_PATH, 'static')
 STATIC_URL = '/static/'
-STATICFILES_DIRS = (
-    str(os.path.join(PROJECT_PATH, 'static')),
-)
 
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 ######################################
