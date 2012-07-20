@@ -13,7 +13,7 @@ class Category(models.Model):
     class Meta:
         ordering = ('name',)
         verbose_name_plural = 'categories'
-    
+
     def __unicode__(self):
         return self.name
 
@@ -29,10 +29,10 @@ class Service(models.Model):
 
     class Meta:
         ordering = ('name',)
-    
+
     def __unicode__(self):
         return self.name
-    
+
     @models.permalink
     def get_absolute_url(self):
         return ('service', [self.slug])
@@ -43,25 +43,25 @@ class Service(models.Model):
         """
         lowest = Status.objects.default()
         severity = lowest.severity
-        
+
         yesterday = date.today() - timedelta(days=1)
         ago = yesterday - timedelta(days=5)
-        
+
         events = self.events.filter(start__gt=ago, start__lt=date.today())
-        
+
         stats = {}
-        
+
         for i in range(5):
             stats[yesterday.day] = {
-                "image": lowest.image,
+                "image": lowest.image_url,
                 "day": yesterday,
             }
             yesterday = yesterday - timedelta(days=1)
-        
+
         for event in events:
             if event.status.severity > severity:
                 if event.start.day in stats:
-                    stats[event.start.day]["image"] = "information"
+                    stats[event.start.day]["image"] = 'images/status/information.png'
                     stats[event.start.day]["information"] = True
 
         results = []
@@ -72,9 +72,11 @@ class Service(models.Model):
 
         for k in keys:
             results.append(stats[k])
-            
+
+#        raise NameError(results)
+
         return results
-    
+
 
 
 class StatusManager(models.Manager):
@@ -105,6 +107,9 @@ class Status(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def image_url(self):
+        return 'images/status/{}'.format(self.image)
 
 
 class Event(models.Model):

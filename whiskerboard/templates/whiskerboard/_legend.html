@@ -7,7 +7,7 @@
       {% for status in statuses %}
       <tr>
         <td class="icon">
-          <img src="{% static status_image %}" alt="{{ status.name }}" />
+          <img src="{% static status.image_url %}" alt="{{ status.name }}" />
         </td>
         <td>{{ status.description }}</td>
         </tr>

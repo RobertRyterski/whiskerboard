@@ -1,6 +1,7 @@
 import os
 
-PROJECT_PATH = os.path.abspath(os.path.split(__file__)[0] + "/../..")
+SITE_PATH = os.path.abspath(os.path.split(__file__)[0])
+PROJECT_PATH = os.path.abspath(os.path.join(SITE_PATH, '..'))
 
 ######################################
 # Main
@@ -92,16 +93,20 @@ LOGGING = {
 # Media / Static
 ######################################
 
-MEDIA_ROOT = os.path.join(PROJECT_PATH, 'data')
+MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
 MEDIA_URL = '/media/'
 
 STATIC_ROOT = os.path.join(PROJECT_PATH, 'static')
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = (
+    os.path.join(SITE_PATH, 'static'),
+)
+
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 ######################################
@@ -113,9 +118,9 @@ TEMPLATE_DEBUG = DEBUG
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
+#    'django.template.loaders.eggs.Loader',
 )
 
 TEMPLATE_DIRS = (
-    os.path.join(PROJECT_PATH, 'templates'),
+    os.path.join(SITE_PATH, 'templates'),
 )
