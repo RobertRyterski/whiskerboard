@@ -6,6 +6,20 @@ Whiskerboard is a status board for websites, services, and APIs, like Amazon's
 It is heavily based on [Stashboard](http://www.stashboard.org/). Unlike
 Stashboard, it uses vanilla Django, so you aren't stuck using Google App Engine.
 
+## Mongo or Sql?
+This app supports using Mongo or SQL, howerver, the data models are quite different.  I recommend looking at each models.py
+file and taking a look to see which is best for you.  The reason for the difference is largely based on need at the time
+of creation, and the storage differences between sql and mongo.
+
+## Settings/Configuration
+If you want to use mongo as your backend set USE_MONGO_DB to true in your settings.py file as demonstrated below.
+
+```python
+USE_MONGO_DB = True
+```
+
+If you use mongo and want to have a django style admin interface look at how the example app is
+setup using [mongonaut](https://github.com/pydanny/django-mongonaut)
 
 ## Quick start guide
 
@@ -34,7 +48,7 @@ Stashboard, it uses vanilla Django, so you aren't stuck using Google App Engine.
    )
    ```
 
-3. Sync and run
+3. Sync and run (only need for SQL)
    ```sh
    $ cd your/django/project
    $ python manage.py syncdb

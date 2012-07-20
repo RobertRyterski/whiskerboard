@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.contrib import admin
 from .models import Category, Service, Status, Event
 
@@ -28,6 +30,3 @@ class EventAdmin(admin.ModelAdmin):
     list_filter = ('service', 'status')
 
 admin.site.register(Event, EventAdmin)
-
-
-

@@ -1,3 +1,4 @@
+"""
 from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed
 from django.utils.feedgenerator import Atom1Feed
@@ -27,4 +28,4 @@ class EventFeed(Feed):
     def item_link(self, item):
         return item.service.get_absolute_url()
 
-
+"""

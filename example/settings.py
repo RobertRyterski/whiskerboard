@@ -22,8 +22,8 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.admin',
     'whiskerboard',
+    'mongonaut',
 )
 
 ######################################
@@ -122,3 +122,6 @@ TEMPLATE_LOADERS = (
 TEMPLATE_DIRS = (
     os.path.join(PROJECT_PATH, 'templates'),
 )
+
+USE_MONGO_DB = True
+from mongo_settings import *
