@@ -1,5 +1,7 @@
 # Whiskerboard
 
+# THIS IS STILL ALPHA BRANCH
+
 Whiskerboard is a status board for websites, services, and APIs, like Amazon's
 [AWS status page](http://status.aws.amazon.com/).
 
