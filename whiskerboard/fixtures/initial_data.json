@@ -5,7 +5,7 @@
     "fields": {
       "name": "Down",
       "slug": "down", 
-      "image": "cross-circle", 
+      "image": "cross-circle.png", 
       "severity": 40,
       "description": "The service is currently down"
     }
@@ -16,7 +16,7 @@
     "fields": {
       "name": "Up",
       "slug": "up", 
-      "image": "tick-circle", 
+      "image": "tick-circle.png", 
       "severity": 10,
       "description": "The service is up"
     }
@@ -27,7 +27,7 @@
     "fields": {
       "name": "Warning",
       "slug": "warning", 
-      "image": "exclamation", 
+      "image": "exclamation.png", 
       "severity": 30,
       "description": "The service is experiencing intermittent problems"
     }

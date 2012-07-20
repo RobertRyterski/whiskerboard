@@ -7,16 +7,33 @@ It is heavily based on [Stashboard](http://www.stashboard.org/). Unlike
 Stashboard, it uses vanilla Django, so you aren't stuck using Google App Engine.
 
 
-## Quick start guide
+## Example
 
-1. Install Whiskerboard
+We've created an example project complete with CSS and images for testing.
+There isn't any sample data currently, so you'll have to add your own.
+
+It's pretty easy to set up:
+    ```sh
+    $ git clone git@github.com:RobertRyterski/whiskerboard.git
+    $ cd whiskerboard/example
+    $ sudo pip install -r requirements.txt
+    $ cd ..
+    $ python manage.py syncdb
+    $ python manage.py runserver
+    ```
+
+## Install
+
+If you'd rather install Whiskerboard as a reusable Django app, use setup.py:
+
    ```sh
    $ git clone git@github.com:RobertRyterski/whiskerboard.git
    $ cd whiskerboard
    $ python setup.py install
    ```
 
-2. Add Whiskerboard to your Django project
+Toss Whiskerboard in your project's `INSTALLED_APPS`:
+
    ```py
    # settings.py
    INSTALLED_APPS = (
@@ -24,6 +41,9 @@ Stashboard, it uses vanilla Django, so you aren't stuck using Google App Engine.
        'whiskerboard',
    )
    ```
+   
+Add an an include for your URL patterns:
+
    ```py
    # urls.py
    urlpatterns = patterns('',
@@ -33,8 +53,9 @@ Stashboard, it uses vanilla Django, so you aren't stuck using Google App Engine.
        url(r'^admin/', include(admin.site.urls)),
    )
    ```
+> _Note_: The admin site is only required if you want to manually add items without the API.
 
-3. Sync and run
+Finally, sync and run:
    ```sh
    $ cd your/django/project
    $ python manage.py syncdb
