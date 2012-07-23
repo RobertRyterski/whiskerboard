@@ -5,7 +5,6 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext as _
 from mongoengine.document import Document
 from mongoengine.document import EmbeddedDocument
-from mongoengine.queryset import QuerySetManager
 from mongoengine.fields import DateTimeField
 from mongoengine.fields import EmbeddedDocumentField
 from mongoengine.fields import ListField
@@ -63,6 +62,9 @@ class Service(Document):
                 return slug
         self.slug = make_slug(self.name)
         super(Service, self).save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return self.slug
 
     @classmethod
     def is_slug_available(cls, slug):
