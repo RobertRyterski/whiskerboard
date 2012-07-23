@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from django.conf import settings
 from django.utils.translation import ugettext as _
+from whiskerboard import USE_MONGO_DB
 
 
 STATUS_CODES = {'ok': _('Ok'),
@@ -9,7 +9,7 @@ STATUS_CODES = {'ok': _('Ok'),
                 'warning': _('Warning'),
                 'error': _('Error')}
 
-if getattr(settings, 'USE_MONGO_DB', False):
+if USE_MONGO_DB:
     from mongo_models import *
 else:
     from sql_models import *
