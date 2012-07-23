@@ -1,4 +1,6 @@
 {% extends "whiskerboard/base.html" %}
+{% load static from staticfiles %}
+
 {% block title %}{{ service.name }} | {{ block.super }}{% endblock %}
 
 {% block content %}
@@ -29,9 +31,9 @@
                 <td>{{ e.start|date:"N j, fA T" }}</td>
                 <td class="status highlight">
                   {% if e.informational %}
-                    <img src="{{ STATIC_URL }}images/status/information.png" alt="Information">
+                    <img src="{% static 'images/status/information.png' %}" alt="Information">
                   {% else %}
-                    <img src="{{ STATIC_URL }}images/status/{{ e.status.image }}.png" alt="{{ e.status.name }}">
+                    <img src="{% static e.status.image_url %}" alt="{{ e.status.name }}">
                   {% endif %}
                 </td>
                 <td>{{ e.message|safe }}</td>

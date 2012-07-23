@@ -5,10 +5,10 @@ from django.utils.feedgenerator import Atom1Feed
 from .models import Event
 
 class EventFeed(Feed):
-    description = "Latest status updates."
+    description = 'Latest status updates.'
     link = '/'
     feed_type = Atom1Feed
-    
+
     def title(self):
         return Site.objects.get_current().name
 
@@ -20,7 +20,7 @@ class EventFeed(Feed):
             status = 'Information'
         else:
             status = item.status.name
-        return '%s: %s' % (item.service.name, status)
+        return '{}: {}'.format(item.service.name, status)
 
     def item_description(self, item):
         return item.message

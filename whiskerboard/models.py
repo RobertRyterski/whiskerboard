@@ -3,7 +3,6 @@
 from django.utils.translation import ugettext as _
 from whiskerboard import USE_MONGO_DB
 
-
 STATUS_CODES = {'ok': _('Ok'),
                 'info': _('Info'),
                 'warning': _('Warning'),
