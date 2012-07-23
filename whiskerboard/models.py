@@ -35,7 +35,7 @@ class Service(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('service', [self.slug])
+        return ('whiskerboard.service', [self.slug])
 
     def last_five_days(self):
         """
@@ -51,7 +51,7 @@ class Service(models.Model):
 
         stats = {}
 
-        for i in range(5):
+        for i in xrange(5):
             stats[yesterday.day] = {
                 "image": lowest.image_url,
                 "day": yesterday,
@@ -73,15 +73,13 @@ class Service(models.Model):
         for k in keys:
             results.append(stats[k])
 
-#        raise NameError(results)
-
         return results
-
 
 
 class StatusManager(models.Manager):
     def default(self):
         return self.get_query_set().filter(severity=10)[0]
+
 
 class Status(models.Model):
     """

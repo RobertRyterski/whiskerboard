@@ -6,7 +6,7 @@
     <title>{% block title %}{{ current_site.name }}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/reset.css' %}" type="text/css" media="screen">
     <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen">    
-    <link rel="alternate" type="application/atom+xml" title="Latest status updates." href="{% comment %}{% url feed %}{% endcomment %}">
+    <link rel="alternate" type="application/atom+xml" title="Latest status updates." href="{% comment %}{% url whiskerboard.feed %}{% endcomment %}">
   </head>
   <body>
     <div id="wrapper">
@@ -27,7 +27,7 @@
        <li id="icons">Icons by <a href="http://p.yusukekamiyamane.com/">Yusuke Kamiyamane</a></li>
       </ul>
       <ul class="right">
-	<li id="powered">Powered by <a href="http://github.com/bfirsh/whiskerboard">Whiskerboard</a>, based on <a href="http://www.stashboard.org">Stashboard</a></li>
+	<li id="powered">Powered by <a href="http://github.com/RobertRyterski/whiskerboard">Whiskerboard</a>, based on <a href="http://www.stashboard.org">Stashboard</a></li>
        </ul>
     </div>
     {% block js %}
