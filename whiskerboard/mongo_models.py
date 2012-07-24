@@ -2,18 +2,12 @@
 
 from datetime import datetime
 from django.template.defaultfilters import slugify
-from django.utils.translation import ugettext as _
 from mongoengine.document import Document
 from mongoengine.document import EmbeddedDocument
 from mongoengine.fields import DateTimeField
 from mongoengine.fields import EmbeddedDocumentField
 from mongoengine.fields import ListField
 from mongoengine.fields import StringField
-
-STATUS_CODES = {'ok': _('Ok'),
-                'info': _('Info'),
-                'warning': _('Warning'),
-                'error': _('Error')}
 
 
 class Message(EmbeddedDocument):

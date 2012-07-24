@@ -4,7 +4,7 @@ AUTHENTICATION_BACKENDS = (
 
 SESSION_ENGINE = 'mongoengine.django.sessions'
 
-db_name = "cloud_status"
+db_name = "whiskerboard"
 
 from mongoengine.connection import connect
 MONGO_CONNECTION = connect(db_name, host='localhost')
