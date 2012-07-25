@@ -9,7 +9,7 @@ Here is a good site for [OAuth examples](http://oauth.net/2/).
 * [Status](#status)  -- Used to get the available statuses for an incident
 
 NOTE: unless otherwise stated all fields shown in an example are required to make the API call.
-Every response field will be returned.  If it does not actually have a value, it will be set to "None".
+Every response field will be returned.  If it does not actually have a value, it will be set to null.
 
 NOTE: All dates should be in UTC, including dates sent via POST, or PUT.  This is assumed to be the case.
 
@@ -58,8 +58,8 @@ service -- a dictionary representing a service
                   "name": "Second Service",
                   "url": "website.com/whiskerboard/second-service",
                   "status": "ok",
-                  "tags": "None",
-                  "current_incidents": "None"
+                  "tags": null,
+                  "current_incidents": null
                  }
                ]
 }
@@ -81,7 +81,7 @@ HTTP/1.1
 
 #### Example response -- specific service
 
-post_incidents will only be supplied if the optional query parameter past=true has
+past_incidents will only be supplied if the optional query parameter past=true has
 been given.
 
 tags -- a way to mark a service, helps to link services together logically
@@ -181,7 +181,7 @@ logged late and the created_date is after the start_date.
   "status": "warning",
   "created_date": "2012-09-18T04:24Z",
   "start_date": "2012-09-18T04:24Z",
-  "end_date": "None"
+  "end_date": null
  }
 ```
 
@@ -288,7 +288,7 @@ Optionally may include:
 
 ```
 start_date -- the time this incident began
-end_date -- the time this incident ended  # You may pass None here to re-open an incident
+end_date -- the time this incident ended  # You may pass None or null here to re-open an incident
 service_ids -- list of service ids affected  # Will replace existing ids
 title -- Incident Title # Will change the current title
 message -- A message about what is wrong right now
@@ -321,7 +321,7 @@ Content-Type: application/json;charset=utf-8
 {
     "messsage": "We are still verifying the service is back to normal.  Will update as OK soon.",
     "status": "info",
-    "end_date": None",
+    "end_date": null",
     "title": "Database server lost data in file system."
 }
 ```
