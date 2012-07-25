@@ -21,7 +21,7 @@ class Message(EmbeddedDocument):
     incident_id = StringField()  # In preparation for SQL compatability
 
     def __unicode__(self):
-        return self.message
+        return str(self.message)
 
 
 class Incident(Document):
@@ -34,7 +34,7 @@ class Incident(Document):
                                  default=lambda: datetime.utcnow())
 
     def __unicode__(self):
-        return self.title
+        return str(self.title)
 
 
 class Service(Document):
@@ -74,4 +74,4 @@ class Service(Document):
             return True
 
     def __unicode__(self):
-        return self.name
+        return str(self.name)

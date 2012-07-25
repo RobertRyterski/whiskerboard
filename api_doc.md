@@ -4,9 +4,9 @@ This document contains an explanation of how to use and consume the apis for thi
 application.  It uses OAuth 2.0, so keep that in mind whenever you make your requests.
 Here is a good site for [OAuth examples](http://oauth.net/2/).  There are 2 APIs right now
 
-[Service](#Service) -- Used to get information about all services or a specific service
-[Incident](#Incident) -- Used to update or create an incident that effects a service
-[Status](#Status)  -- Used to get the available statuses for an incident
+* [Service](#service) -- Used to get information about all services or a specific service
+* [Incident](#incident) -- Used to update or create an incident that effects a service
+* [Status](#status)  -- Used to get the available statuses for an incident
 
 NOTE: unless otherwise stated all fields shown in an example are required to make the API call.
 Every response field will be returned.  If it does not actually have a value, it will be set to "None".
@@ -18,14 +18,13 @@ NOTE: All dates should be in UTC, including dates sent via POST, or PUT.  This i
 A list of APIs that allow you to interact with the services you are monitoring with this application.
 Do not get confused, service here refers to the service defined on the front end. For example, if I 
 used whiskerboard to inform of downtimes for "People Finder" app, then I'd have a line on the main 
-whiskerboard page that has "People Finder" as a line.  See [whiskerboard example](whiskerboard.ex.x25p.com)
+whiskerboard page that has "People Finder" as a line.  See [whiskerboard example](wb.x25p.com)
 if you do not understand.
 
 Gets:
 
-[List all services](#list-all-services)
-[List specific service](#list-specific-service)
-[List incidents for service](#list-all-active-incidents-for-a-service)
+* [List all services](#list-all-services-get)
+* [List specific service](#list-specific-service-get)
 
 ### List all services (GET)
 
@@ -34,7 +33,7 @@ Make a GET request to `website.com/api/v1/services` to get a list of services.
 #### Example request -- list services
 
 ```sh
-GET http://whiskerboard.ex.x25p.com/api/v1/services?access_token=YOUR_TOKEN
+GET http://wb.x25p.com/api/v1/services?access_token=YOUR_TOKEN
 HTTP/1.1
 ```
 
@@ -74,13 +73,13 @@ Optionally add past=true as a query parameter to get historical incidents.  Note
 currently supported well.
 
 ```sh
-GET http://whiskerboard.ex.x25p.com/api/v1/services/3834758?access_token=YOUR_TOKEN
+GET http://wb.x25p.com/api/v1/services/3834758?access_token=YOUR_TOKEN&past=true
 HTTP/1.1
 ```
 
 #### Example response -- specific service
 
-post_incidents will only be supplied if the optional query paramter past=true has
+post_incidents will only be supplied if the optional query parameter past=true has
 been given.
 
 ```js
@@ -104,12 +103,14 @@ or the SERVICE_IDs (for creating).
 
 Gets:
 
-[All incidents](#list-all-incidents)
-[Specific incident](#list-specific-incident)
+* [All incidents](#list-all-incidents-get)
+* [Specific incident](#list-specific-incident-get)
+* [Get incident messages](#list-messags-for-incident-get)
 
 Posts:
 
-[Create an incident](#create-an-incident)
+* [Create an incident](#create-an-incident-post)
+* [Update an incident](#update-an-incident-post)
 
 ### List all incidents (GET)
 
@@ -118,7 +119,7 @@ Make a GET request to `website.com/api/v1/incidents`.
 #### Example request -- all incidents
 
 ```sh
-GET http://whiskerboard.ex.x25p.com/api/v1/incidents?access_token=YOUR_TOKEN
+GET http://wb.x25p.com/api/v1/incidents?access_token=YOUR_TOKEN
 HTTP/1.1
 ```
 
@@ -152,7 +153,7 @@ Make a GET request to `website.com/api/v1/incidents/INCIDENT_ID` to get the inci
 #### Example request -- specific incident
 
 ```sh
-GET http://whiskerboard.ex.x25p.com/api/v1/services/3834758/incidents/38f8asdf8?access_token=YOUR_TOKEN
+GET http://wb.x25p.com/api/v1/incidents/38f8asdf8?access_token=YOUR_TOKEN
 HTTP/1.1
 ```
 
@@ -187,7 +188,7 @@ Make a GET request to `website.com/api/v1/incidents/INCIDENT_ID/messages` to get
 #### Example request -- messages
 
 ```sh
-GET http://whiskerboard.ex.x25p.com/api/v1/services/3834758/incidents/38f8asdf8/messages?access_token=YOUR_TOKEN
+GET http://wb.x25p.com/api/v1/incidents/38f8asdf8/messages?access_token=YOUR_TOKEN
 HTTP/1.1
 ```
 
@@ -214,22 +215,119 @@ HTTP/1.1
                   "id": "message_id_10",
                   "status": "OK",
                   "message": "DB back up and all is well.",
-                  "created_date": "2012-09-18T010:24Z"
+                  "created_date": "2012-09-18T10:24Z"
                 }]
  }
 
 ### Create an incident (POST)
 
-Make a POST request to `website.com/api/v1/incidents` .
+Make a POST request to `website.com/api/v1/incidents`.  This will return the id
+of the incident that is created.  Will include an HTTP 201 created status.
 
 Must include the following fields:
 
-service_ids = ["id_1", "id_2"]
-title = "Incident Title"
-message = "A message about what is wrong right now"
+```
+service_ids -- list of service ids affected
+title -- Incident Title
+message -- A message about what is wrong right now
+status -- a valid status
+```
 
+Optionally may include:
 
+```
+start_date -- the time this incident began
+```
 
+#### Example request -- create incident
+
+NOTE: start_date is optional
+
+```sh
+POST http://wh.x25p.com/api/v1/incidents?access_token=YOUR_TOKEN
+HTTP/1.1
+Content-Type: application/json;charset=utf-8
+
+{
+    "service_ids": ["ID_1", "ID_2"],
+    "title": "Databases are down",
+    "messsage": "We lost connection to our internal network.  We will have an update soon.",
+    "status": "Down",
+    "start_date": ""2012-03-12T10:36Z""
+}
+```
+
+#### Example response -- create incident
+
+`HTTP/1.1 201 CREATED`  will be the status code given. 
+
+```js
+{
+    "id": "asd9vj39",
+    "url": "http://wh.x25p.com/api/v1/incidents/asd9vj39"
+}
+```
+
+### Update an incident (PUT)
+
+Make a PUT request to `website.com/api/v1/incidents/INCIDENT_ID`.  This will return
+an HTTP 200 okay status.
+
+Must include the following fields:
+
+```
+message -- A message about what is wrong right now
+```
+
+Optionally may include:
+
+```
+start_date -- the time this incident began
+end_date -- the time this incident ended  # You may pass None here to re-open an incident
+service_ids -- list of service ids affected  # Will replace existing ids
+title -- Incident Title # Will change the current title
+message -- A message about what is wrong right now
+status -- a valid status # Will default to the status of the previous message
+```
+
+#### Example request -- update incident
+
+NOTE: end_date and status are both optional
+
+```sh
+PUT http://wh.x25p.com/api/v1/incidents/asd9vj39?access_token=YOUR_TOKEN
+HTTP/1.1
+Content-Type: application/json;charset=utf-8
+
+{
+    "messsage": "Database connectivity restored.  Services back to normal.",
+    "status": "OK",
+    "end_date": "2012-03-12T13:36Z"
+}
+```
+
+another example request
+
+```sh
+PUT http://wh.x25p.com/api/v1/incidents/38fjas8dfj?access_token=YOUR_TOKEN
+HTTP/1.1
+Content-Type: application/json;charset=utf-8
+
+{
+    "messsage": "We are still verifying the service is back to normal.  Will update as OK soon.",
+    "status": "Info",
+    "end_date": None",
+    "title": "Database server lost data in file system."
+}
+```
+
+#### Example response -- update incident
+
+`HTTP/1.1 200 OK`  will be the status code given. 
+
+```js
+HTTP/1.1 200 OK
+```
 
 
 
