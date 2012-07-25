@@ -50,6 +50,7 @@ service -- a dictionary representing a service
                   "name": "First Service",
                   "url": "website.com/whiskerboard/first-service",
                   "status": "down",
+                  "tags": ["tag1", "tag2"],
                   "current_incidents": ["INCIDENT_ID_1", "INCIDENT_ID_2"]
                  },
                  {
@@ -57,6 +58,7 @@ service -- a dictionary representing a service
                   "name": "Second Service",
                   "url": "website.com/whiskerboard/second-service",
                   "status": "ok",
+                  "tags": "None",
                   "current_incidents": "None"
                  }
                ]
@@ -82,12 +84,14 @@ HTTP/1.1
 post_incidents will only be supplied if the optional query parameter past=true has
 been given.
 
+tags -- a way to mark a service, helps to link services together logically
+
 ```js
 {
   "id": "ID_1",
   "name": "First Service",
   "description": "I am a test service for you viewing pleasure.",
-  "category": "A category to help define what my function may accomplish",
+  "tags": ["api_service", "messaging_service"],
   "create_date": "2010-08-18T04:24Z",
   "url": "website.com/whiskerboard/first-service",
   "status": "warning",
