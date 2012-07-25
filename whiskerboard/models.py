@@ -6,7 +6,7 @@ from whiskerboard import USE_MONGO_DB
 STATUS_CODES = {'ok': _('Ok'),
                 'info': _('Info'),
                 'warning': _('Warning'),
-                'error': _('Error')}
+                'down': _('Down')}
 
 if USE_MONGO_DB:
     from mongo_models import *
