@@ -4,9 +4,9 @@ This document contains an explanation of how to use and consume the apis for thi
 application.  It uses OAuth 2.0, so keep that in mind whenever you make your requests.
 Here is a good site for [OAuth examples](http://oauth.net/2/).  There are 2 APIs right now
 
-*[Service](#service) -- Used to get information about all services or a specific service
-*[Incident](#incident) -- Used to update or create an incident that effects a service
-*[Status](#status)  -- Used to get the available statuses for an incident
+* [Service](#service) -- Used to get information about all services or a specific service
+* [Incident](#incident) -- Used to update or create an incident that effects a service
+* [Status](#status)  -- Used to get the available statuses for an incident
 
 NOTE: unless otherwise stated all fields shown in an example are required to make the API call.
 Every response field will be returned.  If it does not actually have a value, it will be set to "None".
@@ -23,8 +23,8 @@ if you do not understand.
 
 Gets:
 
-*[List all services](#list-all-services-get)
-*[List specific service](#list-specific-service-get)
+* [List all services](#list-all-services-get)
+* [List specific service](#list-specific-service-get)
 
 ### List all services (GET)
 
@@ -103,14 +103,14 @@ or the SERVICE_IDs (for creating).
 
 Gets:
 
-*[All incidents](#list-all-incidents-get)
-*[Specific incident](#list-specific-incident-get)
-*[Get incident messages](#list-messags-for-incident-get)
+* [All incidents](#list-all-incidents-get)
+* [Specific incident](#list-specific-incident-get)
+* [Get incident messages](#list-messags-for-incident-get)
 
 Posts:
 
-*[Create an incident](#create-an-incident-post)
-*[Update an incident](#update-an-incident-put)
+* [Create an incident](#create-an-incident-post)
+* [Update an incident](#update-an-incident-put)
 
 ### List all incidents (GET)
 
