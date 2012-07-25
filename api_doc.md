@@ -2,7 +2,7 @@
 
 This document contains an explanation of how to use and consume the apis for this
 application.  It uses OAuth 2.0, so keep that in mind whenever you make your requests.
-Here is a good site for [OAuth examples](http://oauth.net/2/).  There are 2 APIs right now
+Here is a good site for [OAuth examples](http://oauth.net/2/).
 
 * [Service](#service) -- Used to get information about all services or a specific service
 * [Incident](#incident) -- Used to update or create an incident that effects a service
