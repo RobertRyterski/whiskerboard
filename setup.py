@@ -15,6 +15,8 @@ setup(
     zip_safe=False,
     install_requires=[
         'django>=1.4',
+        # mongonaut will grab mongoengine>=0.5.2
+        'django-mongonaut==0.2.15',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
