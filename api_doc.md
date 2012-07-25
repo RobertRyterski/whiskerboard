@@ -258,7 +258,7 @@ Content-Type: application/json;charset=utf-8
     "title": "Databases are down",
     "messsage": "We lost connection to our internal network.  We will have an update soon.",
     "status": "down",
-    "start_date": ""2012-03-12T10:36Z""
+    "start_date": "2012-03-12T10:36Z"
 }
 ```
 
@@ -321,7 +321,7 @@ Content-Type: application/json;charset=utf-8
 {
     "messsage": "We are still verifying the service is back to normal.  Will update as OK soon.",
     "status": "info",
-    "end_date": null",
+    "end_date": null,
     "title": "Database server lost data in file system."
 }
 ```
