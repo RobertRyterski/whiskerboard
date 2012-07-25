@@ -49,14 +49,14 @@ service -- a dictionary representing a service
                   "id": "ID_1",
                   "name": "First Service",
                   "url": "website.com/whiskerboard/first-service",
-                  "status": "Down",
+                  "status": "down",
                   "current_incidents": ["INCIDENT_ID_1", "INCIDENT_ID_2"]
                  },
                  {
                   "id": "ID_2",
                   "name": "Second Service",
                   "url": "website.com/whiskerboard/second-service",
-                  "status": "OK",
+                  "status": "ok",
                   "current_incidents": "None"
                  }
                ]
@@ -90,13 +90,13 @@ been given.
   "category": "A category to help define what my function may accomplish",
   "create_date": "2010-08-18T04:24Z",
   "url": "website.com/whiskerboard/first-service",
-  "status": "Warning",
+  "status": "warning",
   "current_incidents": ["INCIDENT_ID_1", "INCIDENT_ID_2"],
   "past_incidents": ["OLD_INCIDENT_ID_100", "OLD_INCIDENT_ID_47"]
 }
 ```
 
-## Incidents
+## Incident
 
 This API allows you to create or update an incident.  You will always need either the INCIDENT_ID (for updates)
 or the SERVICE_IDs (for creating).
@@ -105,7 +105,7 @@ Gets:
 
 * [All incidents](#list-all-incidents-get)
 * [Specific incident](#list-specific-incident-get)
-* [Get incident messages](#list-messags-for-incident-get)
+* [Get incident messages](#list-messages-for-incident-get)
 
 Posts:
 
@@ -132,14 +132,14 @@ HTTP/1.1
                   "id": "ID_1",
                   "title": "Database Performance is Slow",
                   "effected_service_ids": ["Servie_ID_1", "Service_ID_7"],
-                  "status": "Warning",
+                  "status": "warning",
                   "start_date": "2012-09-18T04:24Z"
                  },
                  {
                   "id": "ID_2",
                   "title": "Our Apps ISZ borked",
                   "effected_service_ids": ["Servie_ID_10", "Service_ID_4"],
-                  "status": "Down",
+                  "status": "down",
                   "start_date": "2012-10-14T07:21Z"
                  }
                ]
@@ -168,13 +168,13 @@ logged late and the created_date is after the start_date.
   "title": "Database Performance is Slow",
   "latest_message": {
                       "id": "message_id_2",
-                      "status": "Warning",
+                      "status": "warning",
                       "message": "Our system is experiencing issues with connecting to the database.",
                       "created_date": "2012-09-18T08:24Z"
                     }
   "message_ids": ['message_id_1', 'message_id_2'],
   "effected_service_ids": ["Servie_ID_1", "Service_ID_7"],
-  "status": "Warning",
+  "status": "warning",
   "created_date": "2012-09-18T04:24Z",
   "start_date": "2012-09-18T04:24Z",
   "end_date": None,
@@ -201,23 +201,24 @@ HTTP/1.1
   "effected_service_ids": ["Servie_ID_6"],
   "messages": [{
                   "id": "message_id_2",
-                  "status": "Warning",
+                  "status": "warning",
                   "message": "Our system is experiencing issues with connecting to the database.",
                   "created_date": "2012-09-18T08:24Z"
                 },
                 {
                   "id": "message_id_7",
-                  "status": "Down",
+                  "status": "down",
                   "message": "We have lost all db connectivity.",
                   "created_date": "2012-09-18T09:24Z"
                 },
                 {
                   "id": "message_id_10",
-                  "status": "OK",
+                  "status": "ok",
                   "message": "DB back up and all is well.",
                   "created_date": "2012-09-18T10:24Z"
                 }]
  }
+```
 
 ### Create an incident (POST)
 
@@ -252,7 +253,7 @@ Content-Type: application/json;charset=utf-8
     "service_ids": ["ID_1", "ID_2"],
     "title": "Databases are down",
     "messsage": "We lost connection to our internal network.  We will have an update soon.",
-    "status": "Down",
+    "status": "down",
     "start_date": ""2012-03-12T10:36Z""
 }
 ```
@@ -301,7 +302,7 @@ Content-Type: application/json;charset=utf-8
 
 {
     "messsage": "Database connectivity restored.  Services back to normal.",
-    "status": "OK",
+    "status": "ok",
     "end_date": "2012-03-12T13:36Z"
 }
 ```
@@ -315,7 +316,7 @@ Content-Type: application/json;charset=utf-8
 
 {
     "messsage": "We are still verifying the service is back to normal.  Will update as OK soon.",
-    "status": "Info",
+    "status": "info",
     "end_date": None",
     "title": "Database server lost data in file system."
 }
@@ -323,11 +324,42 @@ Content-Type: application/json;charset=utf-8
 
 #### Example response -- update incident
 
-`HTTP/1.1 200 OK`  will be the status code given. 
+`HTTP/1.1 200 OK`  will be the response status code given. 
+
+## Status
+
+This API only has possible call and it returns a list of valid statuses to place for an Incident
+
+Gets:
+
+* [Get valid statuses](#get-statuses)
+
+### Get statuses
+
+Make a GET call to `website.com/api/v1/status`.  Will return a list of valid statuses.
+
+
+#### Example request -- get statuses
+
+```sh
+GET http://wb.x25p.com/api/v1/status?access_token=YOUR_TOKEN
+HTTP/1.1
+```
+
+#### Example response -- get statuses
 
 ```js
-HTTP/1.1 200 OK
+{
+    "statuses": [
+                  "ok",
+                  "info",
+                  "warning",
+                  "down"
+                ]
+}
 ```
+
+
 
 
 
