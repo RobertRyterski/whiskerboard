@@ -177,7 +177,7 @@ logged late and the created_date is after the start_date.
   "status": "warning",
   "created_date": "2012-09-18T04:24Z",
   "start_date": "2012-09-18T04:24Z",
-  "end_date": None,
+  "end_date": "None"
  }
 ```
 
