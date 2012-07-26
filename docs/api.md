@@ -49,6 +49,7 @@ service -- a dictionary representing a service
                   "id": "ID_1",
                   "name": "First Service",
                   "url": "website.com/whiskerboard/first-service",
+                  "api_url": "website.com/api/v1/services/ID_1"
                   "status": "down",
                   "tags": ["tag1", "tag2"],
                   "current_incidents": ["INCIDENT_ID_1", "INCIDENT_ID_2"]
@@ -57,6 +58,7 @@ service -- a dictionary representing a service
                   "id": "ID_2",
                   "name": "Second Service",
                   "url": "website.com/whiskerboard/second-service",
+                  "api_url": "website.com/api/v1/services/ID_2",
                   "status": "ok",
                   "tags": null,
                   "current_incidents": null
@@ -94,6 +96,7 @@ tags -- a way to mark a service, helps to link services together logically
   "tags": ["api_service", "messaging_service"],
   "create_date": "2010-08-18T04:24Z",
   "url": "website.com/whiskerboard/first-service",
+  "api_url": "website.com/api/v1/services/ID_1",
   "status": "warning",
   "current_incidents": ["INCIDENT_ID_1", "INCIDENT_ID_2"],
   "past_incidents": ["OLD_INCIDENT_ID_100", "OLD_INCIDENT_ID_47"]
@@ -181,7 +184,8 @@ logged late and the created_date is after the start_date.
   "status": "warning",
   "created_date": "2012-09-18T04:24Z",
   "start_date": "2012-09-18T04:24Z",
-  "end_date": null
+  "end_date": null,
+  "api_url": "website.com/api/v1/incidents/ID_1"
  }
 ```
 
@@ -201,6 +205,7 @@ HTTP/1.1
 ```js
 {
   "id": "ID_1",
+  "api_url": "website.com/api/v1/incidents/ID_1",
   "title": "DB errors abound.",
   "effected_service_ids": ["Servie_ID_6"],
   "messages": [{
@@ -269,7 +274,7 @@ Content-Type: application/json;charset=utf-8
 ```js
 {
     "id": "asd9vj39",
-    "url": "http://wh.x25p.com/api/v1/incidents/asd9vj39"
+    "api_url": "http://wh.x25p.com/api/v1/incidents/asd9vj39"
 }
 ```
 
