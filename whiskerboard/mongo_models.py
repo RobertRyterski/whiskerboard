@@ -4,6 +4,7 @@ from datetime import datetime
 from django.template.defaultfilters import slugify
 from mongoengine.document import Document
 from mongoengine.document import EmbeddedDocument
+from mongoengine.queryset import QuerySetManager
 from mongoengine.fields import DateTimeField
 from mongoengine.fields import EmbeddedDocumentField
 from mongoengine.fields import ListField
@@ -19,6 +20,7 @@ class Message(EmbeddedDocument):
     message = StringField()
     timestamp = DateTimeField(default=lambda: datetime.utcnow())
     incident_id = StringField()  # In preparation for SQL compatability
+    _default_manager = QuerySetManager()
 
     def __unicode__(self):
         return str(self.message)
@@ -32,6 +34,7 @@ class Incident(Document):
     end_date = DateTimeField(db_field='e')
     created_date = DateTimeField(db_field='c',
                                  default=lambda: datetime.utcnow())
+    _default_manager = QuerySetManager()
 
     def __unicode__(self):
         return str(self.title)
@@ -46,6 +49,7 @@ class Service(Document):
     category = StringField(db_field='c')
     created_date = DateTimeField(db_field='cd',
                                  default=lambda: datetime.utcnow())
+    _default_manager = QuerySetManager()
 
     class Meta:
         ordering = ('name',)
@@ -59,7 +63,10 @@ class Service(Document):
                 slug = u'{0}{1}'.format(slug, slug_count)
                 slug_count += 1
             return slug
-        self.slug = make_slug(self.name)
+
+        if not self.id:
+            self.slug = make_slug(self.name)
+
         super(Service, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
