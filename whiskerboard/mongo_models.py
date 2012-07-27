@@ -5,6 +5,7 @@ from time import mktime
 import uuid
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
+from mongoengine import Q
 from mongoengine.document import Document
 from mongoengine.document import EmbeddedDocument
 from mongoengine.queryset import QuerySetManager
@@ -13,6 +14,11 @@ from mongoengine.fields import EmbeddedDocumentField
 from mongoengine.fields import ListField
 from mongoengine.fields import StringField
 from wsgiref.handlers import format_date_time
+
+# might wanna move to base whiskerboard
+# would make sense and avoid silly import circle
+#from whiskerboard import STATUS_CODES
+from .models import STATUS_CODES
 
 
 class Message(EmbeddedDocument):
@@ -33,9 +39,9 @@ class Message(EmbeddedDocument):
         """
         version = kwargs.pop('version', 1)
         obj = {
-            'id': self.id,
-            #'url': self.get_absolute_url(),
-            #'api_url': self.get_api_url(version),
+            'id': unicode(self.id),
+#            'url': self.get_absolute_url(),
+#            'api_url': self.get_api_url(version),
             'status': self.status,
             'message': self.message,
             'timestamp': format_date_time(mktime(self.timestamp.timetuple())),
@@ -47,7 +53,7 @@ class Message(EmbeddedDocument):
         self.message = kwargs.get('message')
         self.timestamp = kwargs.get('timestamp')
         self.incident_id = kwargs.get('incident_id')
-        # validate?
+        self.validate()
 
 # currently not available
 #    def get_absolute_url(self):
@@ -82,6 +88,7 @@ class Incident(Document):
         # common attributes
         obj = {
             'id': unicode(self.id),
+#            'url': self.get_absolute_url(),
             'api_url': self.get_api_url(version),
             'title': self.title,
             'affected_service_ids': self.service_ids,
@@ -91,7 +98,7 @@ class Incident(Document):
         }
 
         if detail:
-            obj['latest_message'] = self.get_latest_message()
+            obj['latest_message'] = self.get_latest_message().message
             obj['message_ids'] = [m.id for m in self.messages]
             # check formatting
             if self.end_date:
@@ -108,21 +115,35 @@ class Incident(Document):
     def from_python(self, **kwargs):
         self.service_ids = kwargs.get('service_ids')
         self.title = kwargs.get('title')
+        self.validate()
 
-        pass
+    def save(self, *args, **kwargs):
+        # make sure messages are in chronological order?
+        # use SortedListField?
+        self.messages.sort(key=lambda m: m.timestamp)
+        # make sure message statuses are valid -- probably a better place than here
+        return super(Incident, self).save(*args, **kwargs)
 
-    def get_absolute_url(self):
+#    def get_absolute_url(self):
 #        return reverse('whiskerboard.incident', kwargs={'id': self.slug})
-        return 'Not implemented.'
 
     def get_api_url(self, version):
         return reverse('whiskerboard.api.incidents.detail', kwargs={'version': version, 'pk': self.pk})
 
     def get_status(self):
-        return 'Not implemented.'
+        m = self.get_latest_message()
+        if m:
+            return m.status
+        return None
 
     def get_latest_message(self):
-        return 'Not implemented.'
+        if len(self.messages) == 0:
+            return None
+        # sort messages first?
+        #     if save() forces timestamp order, then this may not be needed
+        #     only a pre-save() change would mess up the order
+        self.messages.sort(key=lambda m: m.timestamp)
+        return self.messages[len(self.messages) - 1]
 
 
 class Service(Document):
@@ -161,7 +182,7 @@ class Service(Document):
         }
         current_incidents = self.get_current_incidents()
         if current_incidents:
-            obj['current_incidents'] = [i.id for i in current_incidents]
+            obj['current_incidents'] = [unicode(i.id) for i in current_incidents]
         else:
             obj['current_incidents'] = None
 
@@ -173,7 +194,7 @@ class Service(Document):
         if past:
             past_incidents = self.get_past_incidents()
             if past_incidents:
-                obj['past_incidents'] = [i.id for i in past_incidents]
+                obj['past_incidents'] = [unicode(i.id) for i in past_incidents]
             else:
                 obj['past_incidents'] = None
         return obj
@@ -184,8 +205,7 @@ class Service(Document):
         #self.slug = kwargs.get('slug')
         self.description = kwargs.get('description')
         self.tags = kwargs.get('tags')
-        # validation?
-        return
+        self.validate()
 
     def save(self, *args, **kwargs):
         def make_slug(name):
@@ -209,13 +229,39 @@ class Service(Document):
         return reverse('whiskerboard.api.service.detail', kwargs={'version': version, 'pk': self.pk})
 
     def get_current_incidents(self):
-        return None
+        """
+        Gets incidents with this service ID and an end date > now (or none set).
+        """
+        return Incident.objects.filter((
+            Q(service_ids=unicode(self.id)) &
+            (Q(end_date__gt=datetime.now()) | Q(end_date=None))
+        ))
 
     def get_past_incidents(self):
-        return None
+        """
+        Gets all incidents with this service ID and an end date < now.
+        """
+        return Incident.objects.filter((
+            Q(service_ids=unicode(self.id)) &
+            Q(end_date__lte=datetime.now())
+        ))
 
     def get_status(self):
-        return 'Not implemented.'
+        """
+        Returns the highest status from all current incidents.
+        """
+        incidents = self.get_current_incidents()
+        if not incidents:
+            return None
+        statuses = [i.get_status() for i in incidents]
+        # 'cause having if i.get_status() is not None looks ugly
+        statuses = [s for s in statuses if s is not None]
+        if len(statuses) == 0:
+            return None
+        highest = max(statuses, key=lambda x: STATUS_CODES[x]['priority'])
+        # this may work too
+        #highest = max(statuses, key=lambda x: 0 if x is None else STATUS_CODES[x]['priority'])
+        return highest
 
     @classmethod
     def is_slug_available(cls, slug):
