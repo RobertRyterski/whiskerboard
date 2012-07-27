@@ -12,7 +12,7 @@ import datetime
 class BoardMixin(object):
     def get_context_data(self, **kwargs):
         context = super(BoardMixin, self).get_context_data(**kwargs)
-        context['statuses'] = [STATUS_CODES[k] for k in STATUS_CODES]
+        context['statuses'] = [STATUS_CODES[k]['text'] for k in STATUS_CODES]
         return context
 
 
@@ -33,7 +33,7 @@ class IndexView(BoardMixin, ListView):
             return dates
 
         context = super(IndexView, self).get_context_data(**kwargs)
-        context['default'] = STATUS_CODES['ok']
+        context['default'] = STATUS_CODES['ok']['text']
         context['past'] = get_past_days(5)
         return context
 
