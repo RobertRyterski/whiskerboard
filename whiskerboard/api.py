@@ -278,9 +278,10 @@ class ServiceDetailView(JSONMixin, APIDetailView):
     model = Service
     queryset = Service.objects.all()
 
-    def get_to_python_options(self, options={}):
-        options['past'] = self.request.GET.get('past', False)
-        return super(ServiceDetailView, self).get_format_options(options)
+    def get_to_python_args(self, **kwargs):
+        # if past is set to anything, it will evaluate to True
+        kwargs['past'] = bool(self.request.GET.get('past'))
+        return super(ServiceDetailView, self).get_to_python_args(**kwargs)
 
 
 #class StatusDetailView(JSONMixin, APIDetailView):
