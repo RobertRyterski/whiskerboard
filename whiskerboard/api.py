@@ -33,6 +33,7 @@ __all__ = [
     'ServiceDetailView',
     'IncidentListView',
     'IncidentDetailView',
+    'IncidentMessageView',
 #    'StatusListView',
 ]
 
@@ -307,3 +308,11 @@ class ServiceDetailView(JSONMixin, APIDetailView):
 #class StatusDetailView(JSONMixin, APIDetailView):
 #    queryset = Status.objects.all()
 #    slug_url_kwarg = 'id'
+
+class IncidentMessageView(JSONMixin, APIDetailView):
+    model = Incident
+    queryset = Incident.objects.all()
+
+    def get_to_python_args(self, **kwargs):
+        kwargs['messages'] = True
+        return super(IncidentMessageView, self).get_to_python_args(**kwargs)

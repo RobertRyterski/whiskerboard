@@ -91,6 +91,7 @@ class Incident(Document):
         detail = kwargs.pop('detail', False)
         version = kwargs.pop('version', 1)
         messages = kwargs.pop('messages', False)
+
         # common attributes
         obj = {
             'id': unicode(self.id),
@@ -98,33 +99,42 @@ class Incident(Document):
             'api_url': self.get_api_url(version),
             'title': self.title,
             'affected_service_ids': self.service_ids,
-            'status': self.get_status(),
-            # check formatting
-            'start_date': format_date_time(mktime(self.start_date.timetuple())),
         }
 
-        if detail:
-            latest = self.get_latest_message()
-            if latest:
-                obj['latest_message'] = latest.message
-            else:
-                obj['latest_message'] = None
-            if len(self.messages) > 0:
-                obj['message_ids'] = [m.id for m in self.messages]
-            else:
-                obj['message_ids'] = None
-            # check formatting
-            if self.end_date:
-                obj['end_date'] = format_date_time(mktime(self.end_date.timetuple())),
-            else:
-                obj['end_date'] = None
-            obj['created_date'] = format_date_time(mktime(self.created_date.timetuple()))
-
+        # special messages view for incident; /api/v1/incidents/<id>/messages/
         if messages:
             if len(self.messages) > 0:
                 obj['messages'] = [m.to_python(version=version) for m in self.messages]
             else:
                 obj['messages'] = None
+            # return now to avoid additional properties
+            return obj
+
+        # both lists and detail have these
+        obj['status'] = self.get_status()
+        # check formatting
+        obj['start_date'] = format_date_time(mktime(self.start_date.timetuple()))
+
+        if detail:
+            latest = self.get_latest_message()
+            if latest:
+                obj['latest_message'] = latest.to_python(version=version,
+                                                         detail=detail)
+            else:
+                obj['latest_message'] = None
+
+            if len(self.messages) > 0:
+                obj['message_ids'] = [m.id for m in self.messages]
+            else:
+                obj['message_ids'] = None
+
+            # check formatting
+            if self.end_date:
+                obj['end_date'] = format_date_time(mktime(self.end_date.timetuple())),
+            else:
+                obj['end_date'] = None
+
+            obj['created_date'] = format_date_time(mktime(self.created_date.timetuple()))
 
         return obj
 
@@ -143,7 +153,7 @@ class Incident(Document):
 #        return reverse('whiskerboard.incident', kwargs={'id': self.slug})
 
     def get_api_url(self, version):
-        return reverse('whiskerboard.api.incidents.detail',
+        return reverse('whiskerboard.api.incident.detail',
                        kwargs={'version': version, 'pk': self.pk})
 
     def get_status(self):
