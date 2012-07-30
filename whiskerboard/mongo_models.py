@@ -17,17 +17,19 @@ from wsgiref.handlers import format_date_time
 
 # might wanna move to base whiskerboard
 # would make sense and avoid silly import circle
-#from whiskerboard import STATUS_CODES
-from .models import STATUS_CODES
+#from whiskerboard import STATUS_*
+from .models import STATUS_CHOICES, STATUS_PRIORITIES
 
 
 class Message(EmbeddedDocument):
     # id is used to keep SQL and API compatability
-    id = StringField(default=lambda: uuid.uuid4().hex)
-    status = StringField()
-    message = StringField()
-    timestamp = DateTimeField(default=lambda: datetime.utcnow())
-    incident_id = StringField()  # In preparation for SQL compatability
+    id = StringField(default=lambda: uuid.uuid4().hex, required=True)
+    status = StringField(choices=STATUS_CHOICES.items(), required=True)
+    message = StringField(required=True)
+    timestamp = DateTimeField(default=lambda: datetime.utcnow(), required=True)
+    # incident_id for SQL compatability
+    # maybe use reference field?
+    incident_id = StringField(required=True)
     _default_manager = QuerySetManager()
 
     def __unicode__(self):
@@ -49,10 +51,10 @@ class Message(EmbeddedDocument):
         return obj
 
     def from_python(self, **kwargs):
-        self.status = kwargs.get('status')
-        self.message = kwargs.get('message')
+        self.status = unicode(kwargs.get('status'))
+        self.message = unicode(kwargs.get('message'))
         self.timestamp = kwargs.get('timestamp')
-        self.incident_id = kwargs.get('incident_id')
+        self.incident_id = unicode(kwargs.get('incident_id'))
         self.validate()
 
 # currently not available
@@ -64,10 +66,14 @@ class Message(EmbeddedDocument):
 
 
 class Incident(Document):
-    service_ids = ListField(StringField(), db_field='sid')
-    title = StringField(db_field='t')
-    messages = ListField(EmbeddedDocumentField(Message), db_field='m')
-    start_date = DateTimeField(db_field='s', default=lambda: datetime.utcnow())
+    # maybe use reference field?
+    service_ids = ListField(StringField(), db_field='sid', required=True)
+    title = StringField(db_field='t', required=True)
+    messages = ListField(EmbeddedDocumentField(Message),
+                         db_field='m',
+                         required=True)
+    start_date = DateTimeField(db_field='s',
+                               default=lambda: datetime.utcnow())
     end_date = DateTimeField(db_field='e')
     created_date = DateTimeField(db_field='c',
                                  default=lambda: datetime.utcnow())
@@ -98,8 +104,15 @@ class Incident(Document):
         }
 
         if detail:
-            obj['latest_message'] = self.get_latest_message().message
-            obj['message_ids'] = [m.id for m in self.messages]
+            latest = self.get_latest_message()
+            if latest:
+                obj['latest_message'] = latest.message
+            else:
+                obj['latest_message'] = None
+            if len(self.messages) > 0:
+                obj['message_ids'] = [m.id for m in self.messages]
+            else:
+                obj['message_ids'] = None
             # check formatting
             if self.end_date:
                 obj['end_date'] = format_date_time(mktime(self.end_date.timetuple())),
@@ -108,27 +121,30 @@ class Incident(Document):
             obj['created_date'] = format_date_time(mktime(self.created_date.timetuple()))
 
         if messages:
-            obj['messages'] = [m.to_python(version=version) for m in self.messages]
+            if len(self.messages) > 0:
+                obj['messages'] = [m.to_python(version=version) for m in self.messages]
+            else:
+                obj['messages'] = None
 
         return obj
 
     def from_python(self, **kwargs):
         self.service_ids = kwargs.get('service_ids')
-        self.title = kwargs.get('title')
+        self.title = unicode(kwargs.get('title'))
         self.validate()
 
     def save(self, *args, **kwargs):
         # make sure messages are in chronological order?
         # use SortedListField?
         self.messages.sort(key=lambda m: m.timestamp)
-        # make sure message statuses are valid -- probably a better place than here
         return super(Incident, self).save(*args, **kwargs)
 
 #    def get_absolute_url(self):
 #        return reverse('whiskerboard.incident', kwargs={'id': self.slug})
 
     def get_api_url(self, version):
-        return reverse('whiskerboard.api.incidents.detail', kwargs={'version': version, 'pk': self.pk})
+        return reverse('whiskerboard.api.incidents.detail',
+                       kwargs={'version': version, 'pk': self.pk})
 
     def get_status(self):
         m = self.get_latest_message()
@@ -147,7 +163,7 @@ class Incident(Document):
 
 
 class Service(Document):
-    name = StringField(db_field='n')
+    name = StringField(db_field='n', required=True, unique=True)
     slug = StringField(db_field='s')
     description = StringField(db_field='d')
     tags = StringField(db_field='t')
@@ -200,10 +216,10 @@ class Service(Document):
         return obj
 
     def from_python(self, **kwargs):
-        self.name = kwargs.get('name')
+        self.name = unicode(kwargs.get('name'))
         # until user-specified slugs are supported, ignore if they get passed
         #self.slug = kwargs.get('slug')
-        self.description = kwargs.get('description')
+        self.description = unicode(kwargs.get('description'))
         self.tags = kwargs.get('tags')
         self.validate()
 
@@ -226,7 +242,8 @@ class Service(Document):
         return reverse('whiskerboard.service', kwargs={'slug': self.slug})
 
     def get_api_url(self, version):
-        return reverse('whiskerboard.api.service.detail', kwargs={'version': version, 'pk': self.pk})
+        return reverse('whiskerboard.api.service.detail',
+                       kwargs={'version': version, 'pk': self.pk})
 
     def get_current_incidents(self):
         """
@@ -254,11 +271,11 @@ class Service(Document):
         if not incidents:
             return None
         statuses = [i.get_status() for i in incidents]
-        # 'cause having if i.get_status() is not None looks ugly
+        # 'cause having `if i.get_status() is not None` at the end looks ugly
         statuses = [s for s in statuses if s is not None]
         if len(statuses) == 0:
             return None
-        highest = max(statuses, key=lambda x: STATUS_CODES[x]['priority'])
+        highest = max(statuses, key=lambda x: STATUS_PRIORITIES[x])
         # this may work too
         #highest = max(statuses, key=lambda x: 0 if x is None else STATUS_CODES[x]['priority'])
         return highest

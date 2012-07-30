@@ -8,7 +8,7 @@ Specifing a "model" only will work iff mongoengine Document defines default_mana
 A custom queryset will be respected, but a "model" is needed to create and update mongo. 
 """
 
-from django.core.exceptions import ImproperlyConfigured, ValidationError
+from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse
 from django.utils import simplejson as json
 from django.utils.decorators import method_decorator
@@ -16,7 +16,15 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import View
 from django.views.generic.edit import FormMixin, ModelFormMixin
 from django.views.generic.list import MultipleObjectMixin
+from whiskerboard import USE_MONGO_DB
 from .models import Message, Incident, Service
+
+# set up validation error for handling
+if USE_MONGO_DB:
+    from mongoengine.base import ValidationError
+else:
+    from django.core.exceptions import ValidationError
+
 
 # define __all__ to avoid a long, messy import in urls.py
 __all__ = [
@@ -44,7 +52,7 @@ class APIView(View):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         # version check?
-        self.version = int(kwargs.pop('version', 1))
+        self.version = int(kwargs.get('version', 1))
         # future: apply throttling
         # check authentication (OAuth)
         return super(APIView, self).dispatch(request, *args, **kwargs)
@@ -120,25 +128,31 @@ class APIListView(APIView, FormMixin, MultipleObjectMixin):
     def post(self, request, *args, **kwargs):
         # add better error messages
         obj = self.get_model()()
+        # add form-based validation?
 #        form = self.get_form(self.get_form_class())
         try:
             data = self.from_format(request)
         except ValidationError as e:
-            return self.error(u'There was an error parsing the passed data')
-
-        # form validation or model validation?
+            return self.error(u'There was an error parsing the passed data',
+                              400,
+                              {'message': e.message})
 
         try:
             obj.from_python(**data)
         except ValidationError as e:
-            return self.error(u'There was an error validating the passed data.')
+            return self.error(u'There was an error validating the passed data.',
+                              400,
+                              {'message': e.message})
 
         try:
             obj.save()
-        except ValidationError as e:
-            return self.error(u'There was an error saving the passed data.')
+        except Exception as e:
+            return self.error(u'There was an error saving the passed data.',
+                              400,
+                              {'message': e.message})
 
-        context = obj.to_python(**self.get_to_python_args(method='post'))
+        context = {'id': unicode(obj.id),
+                   'api_url': obj.get_api_url(self.version)}
         return self.render_to_response(context, status=201)
 
 
@@ -175,17 +189,23 @@ class APIDetailView(APIView, ModelFormMixin):
         try:
             data = self.from_format(request)
         except ValidationError as e:
-            return self.error(u'There was an error parsing the passed data')
+            return self.error(u'There was an error parsing the passed data',
+                              400,
+                              {'message': e.message})
 
         try:
             self.object.from_python(**data)
         except ValidationError as e:
-            return self.error(u'There was an error validating the passed data.')
+            return self.error(u'There was an error validating the passed data.',
+                              400,
+                              {'message': e.message})
 
         try:
             self.object.save()
         except ValidationError as e:
-            return self.error(u'There was an error saving the passed data.')
+            return self.error(u'There was an error saving the passed data.',
+                              400,
+                              {'message': e.message})
 
 #        try:
 #            data = self.from_format(request)
