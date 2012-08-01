@@ -4,10 +4,10 @@ from django.utils.translation import ugettext as _
 from whiskerboard import USE_MONGO_DB
 
 STATUS_CHOICES = {
-    'ok': _('Ok'),
-    'info': _('Info'),
-    'warning': _('Warning'),
-    'down': _('Down')
+    'ok': _(u'Ok'),
+    'info': _(u'Info'),
+    'warning': _(u'Warning'),
+    'down': _(u'Down')
 }
 
 STATUS_PRIORITIES = {

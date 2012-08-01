@@ -216,7 +216,7 @@ class APIDetailView(APIView, ModelFormMixin):
 #            return self.error('Validation error')
         context = self.object.to_python(**self.get_to_python_args(method='post'))
         # maybe not 202
-        return self.render_to_response(context, status=202)
+        return self.render_to_response(context, status=200)
 
     def delete(self, request, *args, **kwargs):
         # 204
@@ -283,6 +283,12 @@ class ServiceListView(JSONMixin, APIListView):
     model = Service
     queryset = Service.objects.all()
     context_object_name = 'services'
+
+    def post(self, request, *args, **kwargs):
+        """
+        Disable creation of services on the API.
+        """
+        return self.http_method_not_allowed(request, *args, **kwargs)
 
 
 #class StatusListView(JSONMixin, APIListView):

@@ -3,17 +3,18 @@
 from datetime import datetime
 from time import mktime
 import uuid
+from wsgiref.handlers import format_date_time
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 from mongoengine import Q
+from mongoengine.base import ValidationError
 from mongoengine.document import Document
 from mongoengine.document import EmbeddedDocument
-from mongoengine.queryset import QuerySetManager
 from mongoengine.fields import DateTimeField
 from mongoengine.fields import EmbeddedDocumentField
 from mongoengine.fields import ListField
 from mongoengine.fields import StringField
-from wsgiref.handlers import format_date_time
+from mongoengine.queryset import QuerySetManager
 
 # might wanna move to base whiskerboard
 # would make sense and avoid silly import circle
@@ -51,10 +52,14 @@ class Message(EmbeddedDocument):
         return obj
 
     def from_python(self, **kwargs):
-        self.status = unicode(kwargs.get('status'))
-        self.message = unicode(kwargs.get('message'))
-        self.timestamp = kwargs.get('timestamp')
-        self.incident_id = unicode(kwargs.get('incident_id'))
+        if kwargs.get('status') is not None:
+            self.status = unicode(kwargs.get('status'))
+        if kwargs.get('message') is not None:
+            self.message = unicode(kwargs.get('message'))
+        if kwargs.get('timestamp') is not None:
+            self.timestamp = kwargs.get('timestamp')
+        if kwargs.get('incident_id') is not None:
+            self.incident_id = unicode(kwargs.get('incident_id'))
         self.validate()
 
 # currently not available
@@ -139,8 +144,38 @@ class Incident(Document):
         return obj
 
     def from_python(self, **kwargs):
-        self.service_ids = kwargs.get('service_ids')
-        self.title = unicode(kwargs.get('title'))
+        """
+        Handles create and update of Incidents and their messages.
+        """
+        if kwargs.get('title') is not None:
+            self.title = unicode(kwargs.get('title'))
+        if kwargs.get('start_date') is not None:
+            self.start_date = kwargs.get('start_date')
+        if kwargs.get('end_date') is not None:
+            self.end_date = kwargs.get('end_date')
+
+        message = kwargs.get('message')
+        status = kwargs.get('status')
+        service_ids = kwargs.get('service_ids')
+
+        # validate service_ids, make sure they exist
+        # check on reference field, see if it will handle that
+        # 'til then, just add 'em blindly
+        self.service_ids = service_ids
+
+        if message is None:
+            raise ValidationError('A message is required.')
+        message = unicode(message)
+
+        if status is None:
+            raise ValidationError('A status is required.')
+        status = unicode(status.lower())
+
+        if status not in STATUS_CHOICES.keys():
+            raise ValidationError('Status "{}" is not valid.'.format(status))
+
+        self.messages.append(Message(message=message, status=status, incident_id=self.id))
+
         self.validate()
 
     def save(self, *args, **kwargs):
@@ -226,11 +261,15 @@ class Service(Document):
         return obj
 
     def from_python(self, **kwargs):
-        self.name = unicode(kwargs.get('name'))
+        if kwargs.get('name') is not None:
+            self.name = unicode(kwargs.get('name'))
         # until user-specified slugs are supported, ignore if they get passed
-        #self.slug = kwargs.get('slug')
-        self.description = unicode(kwargs.get('description'))
-        self.tags = kwargs.get('tags')
+#        if kwargs.get('slug') is not None:
+#            self.slug = unicode(kwargs.get('slug'))
+        if kwargs.get('description') is not None:
+            self.description = unicode(kwargs.get('description'))
+        if kwargs.get('tags') is not None:
+            self.tags = unicode(kwargs.get('tags'))
         self.validate()
 
     def save(self, *args, **kwargs):
