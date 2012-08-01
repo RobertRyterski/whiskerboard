@@ -9,7 +9,8 @@ from .models import Service, STATUS_CODES
 class BoardMixin(object):
     def get_context_data(self, **kwargs):
         context = super(BoardMixin, self).get_context_data(**kwargs)
-        context['statuses'] = [STATUS_CODES[k] for k in STATUS_CODES]
+        context['statuses'] = STATUS_CODES.keys()
+        context['status_names'] = [STATUS_CODES[k] for k in STATUS_CODES]
         return context
 
 
@@ -30,7 +31,7 @@ class IndexView(BoardMixin, ListView):
             return dates
 
         context = super(IndexView, self).get_context_data(**kwargs)
-        context['default'] = STATUS_CODES['ok']
+        context['default'] = 'ok'
         context['past'] = get_past_days(5)
         return context
 
