@@ -17,7 +17,7 @@ from django.views.generic.base import View
 from django.views.generic.edit import FormMixin, ModelFormMixin
 from django.views.generic.list import MultipleObjectMixin
 from whiskerboard import USE_MONGO_DB
-from .models import Message, Incident, Service
+from .models import Message, Incident, Service, STATUS_CHOICES, STATUS_PRIORITIES
 
 # set up validation error for handling
 if USE_MONGO_DB:
@@ -34,7 +34,7 @@ __all__ = [
     'IncidentListView',
     'IncidentDetailView',
     'IncidentMessageView',
-#    'StatusListView',
+    'StatusListView',
 ]
 
 ## Base API Classes
@@ -273,12 +273,6 @@ class APIIndexView(JSONMixin, View):
 #        return self.render_to_response(context)
 
 
-class IncidentListView(JSONMixin, APIListView):
-    model = Incident
-    queryset = Incident.objects.all()
-    context_object_name = 'incidents'
-
-
 class ServiceListView(JSONMixin, APIListView):
     model = Service
     queryset = Service.objects.all()
@@ -291,16 +285,6 @@ class ServiceListView(JSONMixin, APIListView):
         return self.http_method_not_allowed(request, *args, **kwargs)
 
 
-#class StatusListView(JSONMixin, APIListView):
-#    queryset = Status.objects.order_by('severity')
-#    context_object_name = 'statuses'
-
-
-class IncidentDetailView(JSONMixin, APIDetailView):
-    model = Incident
-    queryset = Incident.objects.all()
-
-
 class ServiceDetailView(JSONMixin, APIDetailView):
     model = Service
     queryset = Service.objects.all()
@@ -311,9 +295,16 @@ class ServiceDetailView(JSONMixin, APIDetailView):
         return super(ServiceDetailView, self).get_to_python_args(**kwargs)
 
 
-#class StatusDetailView(JSONMixin, APIDetailView):
-#    queryset = Status.objects.all()
-#    slug_url_kwarg = 'id'
+class IncidentListView(JSONMixin, APIListView):
+    model = Incident
+    queryset = Incident.objects.all()
+    context_object_name = 'incidents'
+
+
+class IncidentDetailView(JSONMixin, APIDetailView):
+    model = Incident
+    queryset = Incident.objects.all()
+
 
 class IncidentMessageView(JSONMixin, APIDetailView):
     model = Incident
@@ -322,3 +313,16 @@ class IncidentMessageView(JSONMixin, APIDetailView):
     def get_to_python_args(self, **kwargs):
         kwargs['messages'] = True
         return super(IncidentMessageView, self).get_to_python_args(**kwargs)
+
+
+class StatusListView(JSONMixin, APIView):
+    """
+    A simple view to list all the valid statuses.
+    """
+
+    def get(self, request, *args, **kwargs):
+        # with priorities, would have to change if dict comprehension is not supported
+#        statuses = {k:{'text':STATUS_CHOICES[k], 'priority': STATUS_PRIORITIES[k]} for k, v in STATUS_CHOICES.items()}
+        # match current API doc
+        context = {'statuses': STATUS_CHOICES.keys()}
+        return self.render_to_response(context)
