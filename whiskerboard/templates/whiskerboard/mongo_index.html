@@ -2,60 +2,40 @@
 {% load i18n %}
 
 {% block content %}
-
-{% regroup services|dictsort:"category.name" by category as category_list %}
-
-      <div id="webservices" class="frame">
-
-    {% for service in services %}
-
-          <table id="service-list">
-            <thead>
-              <tr>
+<div id="webservices" class="frame">
+    <table id="service-list">
+        <thead>
+            <tr>
                 <th>{% trans 'Service' %}</th>
                 <th class="today">{% trans 'Current' %}</th>
-              
                 {% for day in past %}
-                  <th class="date">{{ day|date:"N j" }}</th>
+                <th class="date">{{ day|date:"N j" }}</th>
                 {% endfor %}
-
-            </thead>
-
-            <tbody id="services-body">
-                <tr>
-                  <td>
+        </thead>
+        <tbody id="services-body">
+            {% for service in services %}
+            <tr>
+                <td><a href="{{ service.get_absolute_url }}">{{ service.name }}</a></td>
+                <td class="status highlight">
                     <a href="{{ service.get_absolute_url }}">
-                      {{ service.name }} </a>
-                  </td>
-                  
-                  <td class="status highlight">
-            <a href="{{ service.get_absolute_url }}">
-          {% with service.events.latest.status as latest_status %}{% if latest_status %}
-          <img src="{{ STATIC_URL }}images/status/{{ latest_status.image }}.png"
-                      alt="{{ latest_status }}"/>
-            {% else %}
-          <img src="{{ STATIC_URL }}images/status/{{ default.image }}.png"
-                      alt="{{ default.name }}"/>
-        {% endif %}{% endwith %}
-            </a>
-                  </td>
-                  
-                  {% for status in service.last_five_days %}
-                    <td class="status">
-                      <img src="{{ STATIC_URL }}images/status/{{ status.image }}.png" alt="{{ status.image }}">
-                    </td>
-                      
-                </tr>
-                
-              {% endfor %}
-              
-            </tbody>
-          </table>
-
+                        {% with service.events.latest.status as latest_status %}
+                        {% if latest_status %}
+                        <img src="{{ STATIC_URL }}images/status/{{ latest_status }}.png" alt="{{ latest_status }}"/>
+                        {% else %}
+                        <img src="{{ STATIC_URL }}images/status/{{ default }}.png" alt="{{ default }}"/>
+                        {% endif %}
+                        {% endwith %}
+                    </a>
+                </td>
+                {% for status in service.last_five_days %}
+                <td class="status">
+                    <img src="{{ STATIC_URL }}images/status/{{ status }}.png" alt="{{ status }}">
+                </td>
+                {% endfor %}
+            </tr>
         {% endfor %}
-        {% include "whiskerboard/legend.html" %}
-        
-      </div>
-      
+        </tbody>
+    </table>
+    {% include "whiskerboard/legend.html" %}
+</div>
 {% endblock %}
-

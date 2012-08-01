@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from .models import Service
-from .models import STATUS_CODES
-from whiskerboard import USE_MONGO_DB
-from django.views.generic import ListView, DetailView
-
-
 import datetime
+from django.views.generic import ListView, DetailView
+from whiskerboard import USE_MONGO_DB
+from .models import Service, STATUS_CODES
 
 
 class BoardMixin(object):
