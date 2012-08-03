@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
+from datetime import datetime, timedelta
+import uuid
 from django.template.defaultfilters import slugify
+from mongoengine import Q
 from mongoengine.document import Document
 from mongoengine.document import EmbeddedDocument
 from mongoengine.queryset import QuerySetManager
@@ -9,8 +11,7 @@ from mongoengine.fields import DateTimeField
 from mongoengine.fields import EmbeddedDocumentField
 from mongoengine.fields import ListField
 from mongoengine.fields import StringField
-
-import uuid
+from .models import STATUS_CODES, STATUS_DEFAULT
 
 
 class Message(EmbeddedDocument):
@@ -38,6 +39,32 @@ class Incident(Document):
 
     def __unicode__(self):
         return str(self.title)
+
+    def get_status(self, **kwargs):
+        """
+        Returns the status of the incident based on the status of the messages.
+
+        Optional kwargs:
+        time -- the datetime to determine the status of
+                defaults to now
+
+        Returns None if specified time is before any message.
+        """
+        # if they're aren't any messages, we don't have any status
+        # shouldn't happen
+        if len(self.messages) == 0:
+            return None
+
+        time = kwargs.pop('time', datetime.now())
+
+        # assume messages are stored in chronological order
+        # grab the latest message before the specified time
+        for msg in reversed(self.messages):
+            if msg.timestamp <= time:
+                return msg.status
+
+        # if we haven't returned, the time is out of range
+        return None
 
 
 class Service(Document):
@@ -82,3 +109,74 @@ class Service(Document):
 
     def __unicode__(self):
         return str(self.name)
+
+    def get_current_incidents(self):
+        return None
+
+    def get_status(self, **kwargs):
+        """
+        Returns the highest status for a time from a set of incidents.
+
+        Optional kwargs:
+        incidents -- an iterable of incidents to use
+                     defaults to current_incidents
+        time -- the datetime to determine the status of
+                defaults to now
+
+        Note: This function doesn't care if passed incidents affect the current
+                  service or not.
+              If a time is passed outside the range of the incidents, None will
+                  be returned.
+        """
+        time = kwargs.pop('time', datetime.now())
+        incidents = kwargs.pop('incidents', self.get_current_incidents())
+
+        # check 'cause it's possible not to have any current incidents
+        if incidents is None:
+            return None
+
+        statuses = [i.get_status(time=time) for i in incidents]
+        # 'cause having `if i.get_status() is not None` at the end looks ugly
+        statuses = [s for s in statuses if s is not None]
+        if len(statuses) == 0:
+            return None
+        highest = max(statuses, key=lambda x: STATUS_CODES[x][1])
+        return highest
+
+    def get_status_history(self, start=None, end=None):
+        """
+        Returns the status at the end of each day for the specified range.
+
+        start -- datetime for chronological start of range
+                 defaults to 5 days ago
+        end -- datetime for chronological end of range
+               defaults to 1 day ago
+        """
+        if start is None:
+            start = datetime.today() - timedelta(days=5)
+        if end is None:
+            end = datetime.today() - timedelta(days=1)
+
+        # make sure dates are at the very end
+        start = start.replace(hour=23, minute=59, second=59, microsecond=999999)
+        end = end.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        # grab all impacting incidents for this range
+        incidents = Incident.objects.filter(
+            Q(service_ids=unicode(self.id)) &
+            # event started before the end of this range
+            Q(start_date__lte=end) &
+            # event ended after the start of this range
+            (Q(end_date__gte=start) | Q(end_date=None))
+         )
+
+        history = []
+        while start <= end:
+            # rely on get status
+            status = self.get_status(time=start, incidents=incidents)
+            history.append(status)
+            start = start + timedelta(days=1)
+
+        history.reverse()
+
+        return history
