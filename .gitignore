@@ -9,3 +9,4 @@ static_root/
 whiskerboard.sqlite3
 .project
 .pydevproject
+.pyc

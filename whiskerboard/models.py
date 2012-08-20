@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+"""
+This models file is used so the sql or mongo backend can be
+dynamically loaded in based on the django application's
+settings.
+"""
+
 from django.utils.translation import ugettext as _
 from whiskerboard import USE_MONGO_DB
 
