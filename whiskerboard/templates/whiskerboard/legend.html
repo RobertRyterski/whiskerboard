@@ -4,12 +4,12 @@
   <h4> Legend </h4>
   <table class="legend">
     <tbody id="legend-body">
-      {% for status in statuses %}
+      {% for status, data in statuses.items %}
       <tr>
         <td class="icon">
-          <img src="{% static status.image_url %}" alt="{{ status.name }}" />
+          <img src="{{ STATIC_URL }}images/status/{{ status }}.png" alt="{{ data.0 }}" />
         </td>
-        <td>{{ status.description }}</td>
+        <td>{{ data.0 }}</td>
         </tr>
       {% endfor %}
     </tbody>

@@ -179,7 +179,7 @@ logged late and the created_date is after the start_date.
                       "message": "Our system is experiencing issues with connecting to the database.",
                       "created_date": "2012-09-18T08:24Z"
                     }
-  "message_ids": ['message_id_1', 'message_id_2'],
+  "message_ids": ["message_id_1", "message_id_2"],
   "effected_service_ids": ["Servie_ID_1", "Service_ID_7"],
   "status": "warning",
   "created_date": "2012-09-18T04:24Z",
