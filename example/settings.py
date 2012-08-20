@@ -1,7 +1,7 @@
 import os
 
-SITE_PATH = os.path.abspath(os.path.split(__file__)[0])
-PROJECT_PATH = os.path.abspath(os.path.join(SITE_PATH, '..'))
+SITE_PATH = os.getcwd()
+PROJECT_PATH = os.path.abspath(os.path.join(SITE_PATH, 'example'))
 
 ######################################
 # Main
@@ -26,6 +26,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'whiskerboard',
     'mongonaut',
+    'gunicorn'
 )
 
 ######################################
@@ -98,6 +99,7 @@ MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
 MEDIA_URL = '/media/'
 
 STATIC_ROOT = os.path.join(PROJECT_PATH, 'static')
+STATIC_DOC_ROOT = STATIC_ROOT
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
