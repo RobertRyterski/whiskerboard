@@ -26,7 +26,7 @@ class Service(Document):
     name = StringField(db_field='n', required=True, unique=True)
     slug = StringField(db_field='s')
     description = StringField(db_field='d')
-    tags = StringField(db_field='t')
+    tags = ListField(StringField(), db_field='t')
     created_date = DateTimeField(db_field='cd',
                                  default=lambda: datetime.utcnow())
     _default_manager = QuerySetManager()
