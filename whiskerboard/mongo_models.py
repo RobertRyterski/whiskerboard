@@ -152,7 +152,7 @@ class Service(Document):
 
 class Message(EmbeddedDocument):
     # id is used to keep SQL and API compatability
-    id = StringField(default=lambda: uuid.uuid4().hex, required=True)
+    message_id = StringField(default=lambda: uuid.uuid4().hex)
     status = StringField(choices=STATUS_CHOICES.items(), required=True)
     message = StringField(required=True)
     timestamp = DateTimeField(default=lambda: datetime.utcnow(), required=True)
