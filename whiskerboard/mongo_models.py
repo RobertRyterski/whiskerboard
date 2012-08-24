@@ -157,7 +157,7 @@ class Message(EmbeddedDocument):
     message = StringField(required=True)
     timestamp = DateTimeField(default=lambda: datetime.utcnow(), required=True)
     # incident_id for SQL compatability
-    incident_id = StringField()
+    incident_id = StringField(help_text="Do not use")
     _default_manager = QuerySetManager()
 
     def __unicode__(self):
@@ -167,7 +167,7 @@ class Message(EmbeddedDocument):
         """
         Converts the instance to a simple Python dictionary.
         """
-        version = kwargs.pop('version', 1)
+        # version = kwargs.pop('version', 1)
         obj = {
             'id': unicode(self.id),
 #            'url': self.get_absolute_url(),
