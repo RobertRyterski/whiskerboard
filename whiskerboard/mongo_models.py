@@ -23,10 +23,10 @@ from .models import STATUS_CHOICES, STATUS_PRIORITIES
 
 
 class Service(Document):
-    name = StringField(db_field='n', required=True, unique=True)
-    slug = StringField(db_field='s')
+    name = StringField(db_field='n', max_length=120)
+    slug = StringField(db_field='s', max_length=120)
     description = StringField(db_field='d')
-    tags = ListField(StringField(), db_field='t')
+    tags = ListField(StringField(max_length=120), db_field='t')
     created_date = DateTimeField(db_field='cd',
                                  default=lambda: datetime.utcnow())
     _default_manager = QuerySetManager()
@@ -91,14 +91,14 @@ class Service(Document):
         def make_slug(name):
             # For services with the same name, generate a unique slug
             slug = slugify(u'{0}'.format(name)).lower()
+            new_slug = slug
             slug_count = 1
             while not self.is_slug_available(slug):
-                slug = u'{0}{1}'.format(slug, slug_count)
+                new_slug = u'{0}_{1}'.format(slug, slug_count)
                 slug_count += 1
-            return slug
+            return new_slug
 
-        if not self.id:
-            self.slug = make_slug(self.name)
+        self.slug = make_slug(self.name)
 
         super(Service, self).save(*args, **kwargs)
 
