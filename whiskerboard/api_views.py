@@ -268,8 +268,5 @@ class StatusListView(JSONMixin, APIView):
     """
 
     def get(self, request, *args, **kwargs):
-        # with priorities, would have to change if dict comprehension is not supported
-#        statuses = {k:{'text':STATUS_CHOICES[k], 'priority': STATUS_PRIORITIES[k]} for k, v in STATUS_CHOICES.items()}
-        # match current API doc
         context = {'statuses': STATUS_CHOICES.keys()}
         return self.render_to_response(context)
