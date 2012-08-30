@@ -2,8 +2,7 @@
 
 from datetime import datetime
 from time import mktime
-import uuid
-from wsgiref.handlers import format_date_time
+
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 from mongoengine.base import ValidationError
@@ -15,15 +14,15 @@ from mongoengine.fields import ListField
 from mongoengine.fields import ReferenceField
 from mongoengine.fields import StringField
 from mongoengine.queryset import QuerySetManager
+from wsgiref.handlers import format_date_time
 
-# might wanna move to base whiskerboard
-# would make sense and avoid silly import circle
-#from whiskerboard import STATUS_*
 from .models import STATUS_CHOICES, STATUS_PRIORITIES
 
 
 class Service(Document):
-    name = StringField(db_field='n', max_length=120)
+    # called service_name because mongoengine uses .name on fields to get their name.
+    # This causes issues in mongonaut when trying to retrieve field_values.
+    service_name = StringField(db_field='n', max_length=120)
     slug = StringField(db_field='s', max_length=120)
     description = StringField(db_field='d')
     tags = ListField(StringField(max_length=120), db_field='t')
@@ -35,7 +34,7 @@ class Service(Document):
         ordering = ('name',)
 
     def __unicode__(self):
-        return str(self.name)
+        return str(self.service_name)
 
     def to_python(self, **kwargs):
         """
@@ -50,7 +49,7 @@ class Service(Document):
         # common attributes
         obj = {
             'id': unicode(self.id),
-            'name': self.name,
+            'name': self.service_name,
             'url': self.get_absolute_url(),
             'api_url': self.get_api_url(version),
             'status': self.get_status(),
@@ -77,7 +76,7 @@ class Service(Document):
 
     def from_python(self, **kwargs):
         if kwargs.get('name') is not None:
-            self.name = unicode(kwargs.get('name'))
+            self.service_name = unicode(kwargs.get('name'))
         # until user-specified slugs are supported, ignore if they get passed
         # if kwargs.get('slug') is not None:
         #    self.slug = unicode(kwargs.get('slug'))
@@ -93,12 +92,12 @@ class Service(Document):
             slug = slugify(u'{0}'.format(name)).lower()
             new_slug = slug
             slug_count = 1
-            while not self.is_slug_available(slug):
-                new_slug = u'{0}_{1}'.format(slug, slug_count)
+            while not Service.is_slug_available(new_slug, getattr(self, 'id', None)):
+                new_slug = u'{0}-{1}'.format(slug, slug_count)
                 slug_count += 1
             return new_slug
 
-        self.slug = make_slug(self.name)
+        self.slug = make_slug(self.service_name)
 
         super(Service, self).save(*args, **kwargs)
 
@@ -142,22 +141,20 @@ class Service(Document):
         return highest
 
     @classmethod
-    def is_slug_available(cls, slug):
+    def is_slug_available(cls, slug, object_id=None):
         try:
-            cls.objects.get(slug=slug)
+            existing_slug = cls.objects.get(slug=slug)
+            if existing_slug.id == object_id:
+                return True
             return False
         except cls.DoesNotExist:
             return True
 
 
 class Message(EmbeddedDocument):
-    # id is used to keep SQL and API compatability
-    message_id = StringField(default=lambda: uuid.uuid4().hex)
-    status = StringField(choices=STATUS_CHOICES.items(), required=True)
+    status = StringField(choices=STATUS_CHOICES.items(), required=True, max_length=20)
     message = StringField(required=True)
     timestamp = DateTimeField(default=lambda: datetime.utcnow(), required=True)
-    # incident_id for SQL compatability
-    incident_id = StringField(help_text="Do not use")
     _default_manager = QuerySetManager()
 
     def __unicode__(self):
@@ -169,7 +166,6 @@ class Message(EmbeddedDocument):
         """
         # version = kwargs.pop('version', 1)
         obj = {
-            'id': unicode(self.id),
 #            'url': self.get_absolute_url(),
 #            'api_url': self.get_api_url(version),
             'status': self.status,
@@ -189,18 +185,11 @@ class Message(EmbeddedDocument):
             self.incident_id = unicode(kwargs.get('incident_id'))
         self.validate()
 
-# currently not available
-#    def get_absolute_url(self):
-#        return reverse('whiskerboard.incident.message', kwargs={'id': self.id})
-#
-#    def get_api_url(self, version):
-#        return reverse('whiskerboard.api.message.detail', kwargs={'version': version, 'pk': self.id})
-
 
 class Incident(Document):
     # maybe use reference field?
     services = ListField(ReferenceField(Service), db_field='sid', required=True)
-    title = StringField(db_field='t', required=True)
+    title = StringField(db_field='t', required=True, max_length=300)
     messages = ListField(EmbeddedDocumentField(Message),
                          db_field='m',
                          required=True)
@@ -255,11 +244,6 @@ class Incident(Document):
             else:
                 obj['latest_message'] = None
 
-            if len(self.messages) > 0:
-                obj['message_ids'] = [m.id for m in self.messages]
-            else:
-                obj['message_ids'] = None
-
             # check formatting
             if self.end_date:
                 obj['end_date'] = format_date_time(mktime(self.end_date.timetuple())),
@@ -311,9 +295,6 @@ class Incident(Document):
         self.messages = sorted(self.messages, key=lambda m: m.timestamp)
         return super(Incident, self).save(*args, **kwargs)
 
-#    def get_absolute_url(self):
-#        return reverse('whiskerboard.incident', kwargs={'id': self.slug})
-
     def get_api_url(self, version):
         return reverse('whiskerboard.api.incident.detail',
                        kwargs={'version': version, 'pk': self.pk})
@@ -327,8 +308,5 @@ class Incident(Document):
     def get_latest_message(self):
         if len(self.messages) == 0:
             return None
-        # sort messages first?
-        #     if save() forces timestamp order, then this may not be needed
-        #     only a pre-save() change would mess up the order
         self.messages.sort(key=lambda m: m.timestamp)
         return self.messages[len(self.messages) - 1]

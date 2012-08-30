@@ -10,7 +10,7 @@ setup(
     author_email='robert@ryterski.net',
     url='http://github.com/RobertRyterski/whiskerboard/',
     long_description=open('README.md', 'r').read(),
-    packages=find_packages(exclude=('tests', 'example')),
+    packages=find_packages(exclude=('tests', 'examples')),
     include_package_data=True,
     zip_safe=False,
     install_requires=[
