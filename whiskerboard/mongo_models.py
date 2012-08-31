@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
-from time import mktime
 
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
@@ -14,9 +13,13 @@ from mongoengine.fields import ListField
 from mongoengine.fields import ReferenceField
 from mongoengine.fields import StringField
 from mongoengine.queryset import QuerySetManager
-from wsgiref.handlers import format_date_time
 
 from .models import STATUS_CHOICES, STATUS_PRIORITIES
+
+
+def format_date(datetime_object):
+    # Format the object to the utc format specified in the api doc
+    return u"{0}Z".format(datetime.isoformat(datetime_object)[:-3])
 
 
 class Service(Document):
@@ -64,7 +67,7 @@ class Service(Document):
         if detail:
             obj['description'] = self.description
             # check formatting
-            obj['created_date'] = format_date_time(mktime(self.created_date.timetuple()))
+            obj['created_date'] = format_date(self.created_date)
 
         if past:
             past_incidents = self.get_past_incidents()
@@ -170,7 +173,7 @@ class Message(EmbeddedDocument):
 #            'api_url': self.get_api_url(version),
             'status': self.status,
             'message': self.message,
-            'timestamp': format_date_time(mktime(self.timestamp.timetuple())),
+            'timestamp': format_date(self.timestamp)
         }
         return obj
 
@@ -234,7 +237,7 @@ class Incident(Document):
         # both lists and detail have these
         obj['status'] = self.get_status()
         # check formatting
-        obj['start_date'] = format_date_time(mktime(self.start_date.timetuple()))
+        obj['start_date'] = format_date(self.start_date)
 
         if detail:
             latest = self.get_latest_message()
@@ -246,11 +249,11 @@ class Incident(Document):
 
             # check formatting
             if self.end_date:
-                obj['end_date'] = format_date_time(mktime(self.end_date.timetuple())),
+                obj['end_date'] = format_date(self.end_date)
             else:
                 obj['end_date'] = None
 
-            obj['created_date'] = format_date_time(mktime(self.created_date.timetuple()))
+            obj['created_date'] = format_date(self.created_date)
 
         return obj
 

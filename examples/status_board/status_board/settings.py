@@ -156,4 +156,4 @@ LOGGING = {
 }
 
 USE_MONGO_DB = True
-from mongo_settings import *
+from .mongo_settings import *
