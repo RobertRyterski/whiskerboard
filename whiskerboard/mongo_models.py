@@ -19,7 +19,7 @@ from .models import STATUS_CHOICES, STATUS_PRIORITIES
 
 def format_date(datetime_object):
     # Format the object to the utc format specified in the api doc
-    return u"{0}Z".format(datetime.isoformat(datetime_object)[:-3])
+    return u"{0}Z".format(datetime.isoformat(datetime_object))
 
 
 class Service(Document):
