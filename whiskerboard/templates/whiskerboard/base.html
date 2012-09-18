@@ -3,9 +3,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>{% block title %}{{ current_site.name }}{% endblock %}</title>
+    <title>{% block title %}{{ current_site.service_name }}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/reset.css' %}" type="text/css" media="screen">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen">    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen">
     {% comment %}
     <link rel="alternate" type="application/atom+xml" title="Latest status updates." href="{% url whiskerboard.feed %}">
     {% endcomment %}
@@ -14,11 +14,11 @@
     <div id="wrapper">
       <div id="header">
         <img id="logo" src="{% static 'images/logo.png' %}" alt="Logo">
-        <a href="/"><h1 id="title">{{ current_site.name }}</h1></a>
+        <a href="/"><h1 id="title">{{ current_site.service_name }}</h1></a>
       </div>
       <div id="content">
         {% block content %}
-          
+
         {% endblock %}
       </div>
       <div id="push"></div>

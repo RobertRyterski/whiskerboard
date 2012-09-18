@@ -1,13 +1,13 @@
 {% extends "whiskerboard/base.html" %}
 {% load static from staticfiles %}
 
-{% block title %}{{ service.name }} | {{ block.super }}{% endblock %}
+{% block title %}{{ service.service_name }} | {{ block.super }}{% endblock %}
 
 {% block content %}
         
       <div id="webservices" class="frame">
         
-        <h2>{{ service.name }}</h2>
+        <h2>{{ service.service_name }}</h2>
 
 	<p id="serviceDescription">{{ service.description|safe }}</p>
         

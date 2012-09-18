@@ -15,7 +15,7 @@
         <tbody id="services-body">
             {% for service in services %}
             <tr>
-                <td><a href="{{ service.get_absolute_url }}">{{ service.name }}</a></td>
+                <td><a href="{{ service.get_absolute_url }}">{{ service.service_name }}</a></td>
                 <td class="status highlight">
                     <a href="{{ service.get_absolute_url }}">
                         {% with service.get_status as latest_status %}

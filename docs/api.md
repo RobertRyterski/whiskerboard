@@ -94,7 +94,7 @@ tags -- a way to mark a service, helps to link services together logically
   "name": "First Service",
   "description": "I am a test service for you viewing pleasure.",
   "tags": ["api_service", "messaging_service"],
-  "create_date": "2010-08-18T04:24Z",
+  "create_date": "2010-08-18T04:24:00Z",
   "url": "website.com/whiskerboard/first-service",
   "api_url": "website.com/api/v1/services/ID_1",
   "status": "warning",
@@ -140,14 +140,14 @@ HTTP/1.1
                   "title": "Database Performance is Slow",
                   "effected_service_ids": ["Servie_ID_1", "Service_ID_7"],
                   "status": "warning",
-                  "start_date": "2012-09-18T04:24Z"
+                  "start_date": "2012-09-18T04:24:00Z"
                  },
                  {
                   "id": "ID_2",
                   "title": "Our Apps ISZ borked",
                   "effected_service_ids": ["Servie_ID_10", "Service_ID_4"],
                   "status": "down",
-                  "start_date": "2012-10-14T07:21Z"
+                  "start_date": "2012-10-14T07:21:00Z"
                  }
                ]
 }
@@ -177,13 +177,13 @@ logged late and the created_date is after the start_date.
                       "id": "message_id_2",
                       "status": "warning",
                       "message": "Our system is experiencing issues with connecting to the database.",
-                      "created_date": "2012-09-18T08:24Z"
+                      "created_date": "2012-09-18T08:24:00Z"
                     }
   "message_ids": ["message_id_1", "message_id_2"],
   "effected_service_ids": ["Servie_ID_1", "Service_ID_7"],
   "status": "warning",
-  "created_date": "2012-09-18T04:24Z",
-  "start_date": "2012-09-18T04:24Z",
+  "created_date": "2012-09-18T04:24:00Z",
+  "start_date": "2012-09-18T04:24:00Z",
   "end_date": null,
   "api_url": "website.com/api/v1/incidents/ID_1"
  }

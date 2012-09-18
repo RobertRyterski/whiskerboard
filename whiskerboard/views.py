@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import datetime
-from django.views.generic import ListView, DetailView
+from .models import Service
+from .models import STATUS_CHOICES
 from whiskerboard import USE_MONGO_DB
-from .models import Service, STATUS_CODES, STATUS_DEFAULT
+from django.views.generic import ListView, DetailView
+
+import datetime
 
 
 class BoardMixin(object):
     def get_context_data(self, **kwargs):
         context = super(BoardMixin, self).get_context_data(**kwargs)
-        context['statuses'] = STATUS_CODES
+        context['statuses'] = STATUS_CHOICES.values()
         return context
 
 
@@ -30,7 +32,7 @@ class IndexView(BoardMixin, ListView):
             return dates
 
         context = super(IndexView, self).get_context_data(**kwargs)
-        context['default'] = STATUS_DEFAULT
+        context['default'] = STATUS_CHOICES['ok']
         context['past'] = get_past_days(5)
         return context
 

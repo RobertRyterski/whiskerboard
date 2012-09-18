@@ -19,8 +19,8 @@ class ServiceAdmin(MongoAdmin):
     def has_delete_permission(self, request):
         return self.has_edit_permission(request)
 
-    search_fields = ("name",)
-    list_fields = ("name", "description", "category")
+    search_fields = ("service_name",)
+    list_fields = ("service_name", "description", "category")
 
 
 Service.mongoadmin = ServiceAdmin()
