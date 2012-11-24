@@ -5,6 +5,8 @@ import os
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+TEST_RUNNER='testrunner.WhiskerboardTestRunner'
+
 CURRENT_DIR = os.getcwd()
 APP_DIR = u"{0}/{1}".format(CURRENT_DIR, 'status_board')
 
