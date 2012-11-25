@@ -123,7 +123,7 @@ class Service(Document):
         """
         Gets all incidents with this service ID and an end date < now.
         """
-        return Incident.objects.filter(services__in=self,
+        return Incident.objects.filter(services=self,
                                        end_date__lte=datetime.now())
 
     def get_status(self):
