@@ -123,7 +123,25 @@ class ServiceModelTestCase(unittest.TestCase):
         self.assertNotIn(self.incidents[1], past)
 
     def test_get_status(self):
-        pass
+        s = Service.objects.create(service_name='A Troubled Service')
+        
+        # if there are no incidents affecting the service, status is unknown
+        self.assertIsNone(s.get_status())
+        
+        # if there is only an incident with an unknown status affecting this service, status is unknown
+        unknown_incident = Incident.objects.create(title='An Unknown Incident', services=[s])
+        self.assertIsNone(s.get_status())
+        
+        # if there are multiple incidents affecting this service, the highest priority / "worst" status wins
+        m = Message(status='ok', message='okay')
+        ok_incident = Incident.objects.create(title='An OK Incident', services=[s], messages=[m])
+        m = Message(status='warning', message='warning!')
+        warning_incident = Incident.objects.create(title='A Warning Incident', services=[s], messages=[m])
+        m = Message(status='down', message='down!')
+        down_incident = Incident.objects.create(title='A Down Incident', services=[s], messages=[m])
+        m = Message(status='info', message='update')
+        info_incident = Incident.objects.create(title='An Info Incident', services=[s], messages=[m])
+        self.assertEqual('down', s.get_status())
 
     def test_is_slug_available_new_slug(self):
         # make sure the slug doesn't exist first
