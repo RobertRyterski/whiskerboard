@@ -19,35 +19,35 @@ class ServiceModelTestCase(unittest.TestCase):
         started = datetime.datetime.now() - datetime.timedelta(days=7)
         ended = datetime.datetime.now() - datetime.timedelta(days=2)
         messages = [
-            Message(status='down', timestamp=started, message='1 of i1'),
-            Message(status='down', timestamp=started + datetime.timedelta(hours=3), message='2 of i1'),
+            Message(status='down', timestamp=started, message='1 of i0'),
+            Message(status='down', timestamp=started + datetime.timedelta(hours=3), message='2 of i0'),
             Message(status='warning', timestamp=started  + datetime.timedelta(days=1, hours=3), message='3 of i1'),
-            Message(status='ok', timestamp=ended, message='4 of i1'),
+            Message(status='ok', timestamp=ended, message='4 of i0'),
             ]
-        i1 = Incident.objects.create(services=[a], title='incident 1', start_date=started, end_date=ended, messages=messages)
+        i0 = Incident.objects.create(services=[a], title='incident 0', start_date=started, end_date=ended, messages=messages)
         
         # started yesterday, end unknown
         started = datetime.datetime.now() - datetime.timedelta(days=1)
         messages = [
-            Message(status='warning', timestamp=started, message='1 of i2'),
-            Message(status='ok', timestamp=started + datetime.timedelta(hours=12), message='2 of i2'),
-            Message(status='warning', timestamp=datetime.datetime.now(), message='3 of i2'),
+            Message(status='warning', timestamp=started, message='1 of i1'),
+            Message(status='ok', timestamp=started + datetime.timedelta(hours=12), message='2 of i1'),
+            Message(status='warning', timestamp=datetime.datetime.now(), message='3 of i1'),
             ]
-        i2 = Incident.objects.create(services=[a, b], title='incident 2', start_date=started, messages=messages)
+        i1 = Incident.objects.create(services=[a, b], title='incident 1', start_date=started, messages=messages)
 
         # started earlier today, ends tomorrow
         started = datetime.datetime.now() - datetime.timedelta(hours=4)
         ended = datetime.datetime.now() + datetime.timedelta(days=1)
         messages = [
-            Message(status='warning', timestamp=started, message='1 of i3'),
-            Message(status='down', timestamp=started + datetime.timedelta(hours=1), message='2 of i3'),
-            Message(status='down', timestamp=datetime.datetime.now() + datetime.timedelta(hours=3), message='3 of i3'),
+            Message(status='warning', timestamp=started, message='1 of i2'),
+            Message(status='down', timestamp=started + datetime.timedelta(hours=1), message='2 of i2'),
+            Message(status='down', timestamp=datetime.datetime.now() + datetime.timedelta(hours=3), message='3 of i2'),
             ]
-        i3 = Incident.objects.create(services=[a, b], title='incident 3', start_date=started, messages=messages)
+        i2 = Incident.objects.create(services=[a, b], title='incident 2', start_date=started, messages=messages)
         
         # handy accessors for fleshed out data
         self.services = [a, b]
-        self.incidents = [i1, i2, i3]
+        self.incidents = [i0, i1, i2]
 
     def test_unicode(self):
         # testing __unicode__ is really just testing str()
@@ -85,12 +85,42 @@ class ServiceModelTestCase(unittest.TestCase):
         self.assertIn(str(s.pk), s.get_api_url(version))
 
     def test_get_current_incidents(self):
-        # add more specific tests
-        self.assertItemsEqual([self.incidents[1], self.incidents[2]], self.services[0].get_current_incidents())
+        # current incidents = incidents that impact service in question and (end > now or end unknown)
+        current = self.services[0].get_current_incidents()
+        
+        # no incidents
+        s = Service.objects.create(service_name='an uneventful service')
+        self.assertEqual(len(s.get_current_incidents()), 0)
+        
+        # end < now
+        self.assertNotIn(self.incidents[0], current)
+        
+        # end = now
+        
+        # end > now
+        self.assertIn(self.incidents[2], current)
+        
+        # end unknown
+        self.assertIn(self.incidents[1], current)
 
     def test_get_past_incidents(self):
-        # add more specific tests
-        self.assertItemsEqual([self.incidents[0]], self.services[0].get_past_incidents())
+        # past incidents = incidents that impact service in question and end <= now
+        past = self.services[0].get_past_incidents()
+        
+        # no incidents
+        s = Service.objects.create(service_name='an uneventful service')
+        self.assertEqual(len(s.get_past_incidents()), 0)
+        
+        # end < now
+        self.assertIn(self.incidents[0], past)
+        
+        # end = now
+        
+        # end > now
+        self.assertNotIn(self.incidents[2], past)
+        
+        # end unknown
+        self.assertNotIn(self.incidents[1], past)
 
     def test_get_status(self):
         pass
