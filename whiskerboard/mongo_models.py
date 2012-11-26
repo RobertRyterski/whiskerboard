@@ -155,9 +155,9 @@ class Service(Document):
 
 
 class Message(EmbeddedDocument):
-    status = StringField(choices=STATUS_CHOICES.items(), required=True, max_length=20)
-    message = StringField(required=True)
-    timestamp = DateTimeField(default=lambda: datetime.utcnow(), required=True)
+    status = StringField(choices=STATUS_CHOICES.items(), max_length=20)
+    message = StringField()
+    timestamp = DateTimeField(default=lambda: datetime.utcnow())
     _default_manager = QuerySetManager()
 
     def __unicode__(self):
@@ -191,11 +191,10 @@ class Message(EmbeddedDocument):
 
 class Incident(Document):
     # maybe use reference field?
-    services = ListField(ReferenceField(Service), db_field='sid', required=True)
-    title = StringField(db_field='t', required=True, max_length=300)
+    services = ListField(ReferenceField(Service), db_field='sid')
+    title = StringField(db_field='t', max_length=300)
     messages = ListField(EmbeddedDocumentField(Message),
-                         db_field='m',
-                         required=True)
+                         db_field='m')
     start_date = DateTimeField(db_field='s',
                                default=lambda: datetime.utcnow())
     end_date = DateTimeField(db_field='e')
