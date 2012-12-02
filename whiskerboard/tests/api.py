@@ -9,8 +9,8 @@ class ServiceAPITestCase(unittest.TestCase):
         self.client = Client()
 
         a = Service.objects.create(service_name='A Service', description='A service description.')
-        #b = Service.objects.create(service_name='B Service', description='B service description.')
-        self.services = [a]
+        b = Service.objects.create(service_name='B Service', description='B service description.')
+        self.services = [a, b]
 
     def test_root_get(self):
         # HTTP 200 for GET /api/v1/services
@@ -34,8 +34,41 @@ class ServiceAPITestCase(unittest.TestCase):
 
 
 
-    def test_service_added(self):
+    def test_services_get(self):
         r = self.client.get('/api/v1/services')
         rJson = json.loads(r.content)
-        # should probably get the string from the self.services var
-        self.assertEquals("A Service", rJson["services"][0]["name"])
+        i = 0
+        for s in self.services:
+            self.assertEquals(s.service_name, rJson["services"][i]["name"])
+            i = i + 1
+
+    def test_service_get(self):
+        r = self.client.get('/api/v1/services/' + str(self.services[0].id))
+        rJson = json.loads(r.content)
+        self.assertEquals(self.services[0].service_name, rJson["name"])
+
+    #def test_service_post(self):
+    #    #testService = Service.objects.create(service_name='Test Service')
+    #    r = self.client.post('/api/v1/services/', service_name="test service", description="test service description", slug="dfs")
+    #    print r.content
+    #    rr = self.client.get('/api/v1/services')
+    #    print rr.content
+
+    #def test_incident_post(self):
+    #    r = self.client.post('/api/v1/incidents/', content='{"service_ids": ["' + str(self.services[0].id) + '"], "title": "test incident", "message": "test message", "status": "down", "start_date": "2012-03-12T10:36Z"}')
+    #    print r.content
+
+    #def test_incident_put(self):
+    #    r = self.client.put('/api/v1/incidents/' + str(self.services[0].id), message="ITS DOWN")
+    #    print r.content
+    #    r = self.client.get('/api/v1/incidents/')
+    #    print r.content
+
+    def test_status_get(self):
+        r = self.client.get('/api/v1/statuses')
+        statuses = json.loads(r.content)["statuses"]
+
+        self.assertEquals('ok' in statuses, True)
+        self.assertEquals('down' in statuses, True)
+        self.assertEquals('warning' in statuses, True)
+        self.assertEquals('info' in statuses, True)
