@@ -4,7 +4,9 @@ from django.test.client import Client
 from django.utils import unittest
 from django.utils import simplejson as json
 
-from whiskerboard.models import Service, Incident, Message
+from mock import patch
+
+from whiskerboard.models import Service, Incident, Message, format_date
 
 class ServiceModelTestCase(unittest.TestCase):
     """
@@ -53,8 +55,61 @@ class ServiceModelTestCase(unittest.TestCase):
         # testing __unicode__ is really just testing str()
         self.assertEqual(str('A Service'), self.services[0].__unicode__())
 
-    # def test_to_python(self):
-        # pass
+    def test_to_python_standard_base(self):
+        s = self.services[0]
+        obj = s.to_python()
+        
+        # make sure all the keys in the standard view are present
+        keys = ['id', 'name', 'url', 'api_url', 'status', 'tags', 'current_incidents']
+        self.assertItemsEqual(keys, obj.keys())
+        
+        # make sure the values match
+        # (duplicates a lot of code)
+        self.assertEqual(obj['id'], unicode(s.id))
+        self.assertEqual(obj['name'], s.service_name)
+        self.assertEqual(obj['url'], s.get_absolute_url())
+        self.assertEqual(obj['api_url'], s.get_api_url(1))
+        self.assertEqual(obj['status'], s.get_status())
+        self.assertEqual(obj['tags'], s.tags)
+
+        self.assertNotIn('description', obj.keys())
+        self.assertNotIn('created_date', obj.keys())
+        self.assertNotIn('past_incidents', obj.keys())
+        
+    def test_to_python_with_current_incidents(self):
+        s = self.services[0]
+        obj = s.to_python()
+        incidents = s.get_current_incidents()
+        
+        self.assertEqual(len(incidents), len(obj['current_incidents']))
+        for i in incidents:
+            self.assertIn(unicode(i.id), obj['current_incidents'])
+        
+    
+    def test_to_python_without_current_incidents(self):
+        s = Service.objects.create(service_name='Empty Service')
+        obj = s.to_python()        
+        self.assertIsNone(obj['current_incidents'])
+        
+    def test_to_python_detail(self):
+        s = self.services[0]
+        obj = s.to_python(detail=True)
+        
+        self.assertIn('description', obj.keys())
+        self.assertIn('created_date', obj.keys())
+        
+        self.assertEqual(obj['description'], s.description)
+        self.assertEqual(obj['created_date'], format_date(s.created_date))
+        
+        
+    def test_to_python_with_past_incidents(self):
+        s = self.services[0]
+        obj = s.to_python(past=True)
+        
+    def test_to_python_without_past_incidents(self):
+        s = Service.objects.create(service_name='Empty Service')
+        obj = s.to_python(past=True)
+        
 
     # def test_from_python(self):
         # pass
@@ -125,23 +180,23 @@ class ServiceModelTestCase(unittest.TestCase):
     def test_get_status(self):
         s = Service.objects.create(service_name='A Troubled Service')
         
-        # if there are no incidents affecting the service, status is unknown
-        self.assertIsNone(s.get_status())
+        unknown_incident = MockIncident(None)
+        ok_incident = MockIncident('ok')
+        warning_incident = MockIncident('warning')
+        down_incident = MockIncident('down')
+        info_incident = MockIncident('info')
         
-        # if there is only an incident with an unknown status affecting this service, status is unknown
-        unknown_incident = Incident.objects.create(title='An Unknown Incident', services=[s])
-        self.assertIsNone(s.get_status())
-        
-        # if there are multiple incidents affecting this service, the highest priority / "worst" status wins
-        m = Message(status='ok', message='okay')
-        ok_incident = Incident.objects.create(title='An OK Incident', services=[s], messages=[m])
-        m = Message(status='warning', message='warning!')
-        warning_incident = Incident.objects.create(title='A Warning Incident', services=[s], messages=[m])
-        m = Message(status='down', message='down!')
-        down_incident = Incident.objects.create(title='A Down Incident', services=[s], messages=[m])
-        m = Message(status='info', message='update')
-        info_incident = Incident.objects.create(title='An Info Incident', services=[s], messages=[m])
-        self.assertEqual('down', s.get_status())
+        with patch.object(s, 'get_current_incidents') as patched_method:        
+            # if there are no incidents affecting the service, status is unknown        
+            self.assertIsNone(s.get_status())
+            
+            # if there is only an incident with an unknown status affecting this service, status is unknown
+            patched_method.return_value = [unknown_incident]
+            self.assertIsNone(s.get_status())
+            
+            # if there are multiple incidents affecting this service, the highest priority / "worst" status wins
+            patched_method.return_value = [unknown_incident, ok_incident, warning_incident, down_incident, info_incident]
+            self.assertEqual('down', s.get_status())
 
     def test_is_slug_available_new_slug(self):
         # make sure the slug doesn't exist first
@@ -164,4 +219,105 @@ class ServiceModelTestCase(unittest.TestCase):
         b = Service.objects.create(service_name='existing slug test service b')
         self.assertFalse(Service.is_slug_available(a.slug))
         self.assertFalse(Service.is_slug_available(a.slug, b.pk))
+    
+class IncidentModelTestCase(unittest.TestCase):
+    """
+    Tests on the Incident model functions.
+    """
+    
+    def test_unicode(self):
+        i = Incident(title='An Incident')
+        self.assertEqual(str('An Incident'), i.__unicode__())
         
+    def test_to_python(self):
+        pass
+        
+    def test_from_python(self):
+        pass
+        
+    def test_message_order_after_save(self):
+        m1 = Message(message='3', status='down', timestamp=datetime.datetime.now() - datetime.timedelta(hours=1))
+        m2 = Message(message='2', status='warning', timestamp=datetime.datetime.now())
+        m3 = Message(message='1', status='ok', timestamp=datetime.datetime.now() - datetime.timedelta(days=1))
+        s = Service.objects.create(service_name='A Service')
+        i = Incident(title='An Incident', messages=[m1, m2, m3], services=[s])
+        # if messages aren't sorted automatically
+        self.assertEqual(i.messages[0], m1)
+        i.save()
+        self.assertEqual(i.messages[0], m3)
+        self.assertEqual(i.messages[1], m1)
+        self.assertEqual(i.messages[2], m2)
+        
+    def test_get_api_url(self):
+        # bascially testing Django's reverse function
+        i = Incident.objects.create(title='example incident')
+        version = 1
+        # weak test
+        self.assertIn(str(i.pk), i.get_api_url(version))
+        
+    def test_get_status(self):
+        i = Incident(title='An Incident')
+        m = MockMessage('ok')
+        with patch.object(i, 'get_latest_message') as patched_method:        
+            # if there are no messages, status is unknown
+            patched_method.return_value = None
+            self.assertIsNone(i.get_status())
+            
+            # otherwise, should return the value of the latest message
+            patched_method.return_value = m
+            self.assertEqual(i.get_status(), 'ok')
+        
+    def test_get_latest_message(self):
+        
+        m1 = Message(message='1', status='ok', timestamp=datetime.datetime.now() - datetime.timedelta(days=1))
+        m2 = Message(message='2', status='warning', timestamp=datetime.datetime.now() - datetime.timedelta(hours=1))
+        m3 = Message(message='3', status='down', timestamp=datetime.datetime.now())
+        s = Service.objects.create(service_name='A Service')
+        i = Incident(title='An Incident', messages=[m1, m2, m3], services=[s])
+        self.assertEqual(i.get_latest_message(), m3)
+
+class MessageModelTestCase(unittest.TestCase):
+    """
+    Tests on the Message model functions.
+    """
+    
+    def test_unicode(self):
+        m = Message(message='A message')
+        self.assertEqual(str(m.message), m.__unicode__())
+        
+    def test_to_python(self):
+        t = datetime.datetime.now()
+        m = Message(message='A message', timestamp=t, status='ok')
+        obj = {'status': 'ok', 'message': 'A message', 'timestamp': format_date(t)}
+        self.assertItemsEqual(obj, m.to_python())
+
+    def test_from_python(self):
+        m = Message()
+        t = datetime.datetime.now()
+        m.from_python(message='message', status='info', timestamp=t)
+        self.assertEqual(m.message, u'message')
+        self.assertEqual(m.status, u'info')
+        self.assertEqual(m.timestamp, t)
+    
+        
+class MockIncident(object):
+    """
+    A simplified version of Inicdent for integration testing.
+    """
+    
+    def __init__(self, s):
+        self.status = s
+
+    def get_status(self):
+        return self.status
+        
+class MockMessage(object):
+    """
+    A simplified version of Message for integration testing.
+    """
+    
+    def __init__(self, s):
+        self.status = s
+
+    def get_status(self):
+        return self.status
