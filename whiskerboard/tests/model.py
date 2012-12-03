@@ -245,7 +245,7 @@ class IncidentModelTestCase(unittest.TestCase):
         obj = i.to_python()
         
         # make sure all the keys in the standard view are present
-        keys = ['id', 'title', 'api_url', 'status', 'start_date']
+        keys = ['id', 'title', 'api_url', 'affected_service_ids', 'status', 'start_date']
         self.assertItemsEqual(keys, obj.keys())
         
         self.assertEqual(obj['id'], str(i.pk))
@@ -260,7 +260,7 @@ class IncidentModelTestCase(unittest.TestCase):
         obj = i.to_python(messages=True)
         
         # make sure all the keys in the messages view are present
-        keys = ['id', 'title', 'api_url', 'messages']
+        keys = ['id', 'title', 'api_url', 'affected_service_ids', 'messages']
         self.assertItemsEqual(keys, obj.keys())
         
         # empty messages
@@ -273,6 +273,7 @@ class IncidentModelTestCase(unittest.TestCase):
         t = t - datetime.timedelta(days=1)
         m2 = Message(message='b message', timestamp=t, status='down')
         i = Incident.objects.create(title='An Incident', services=[s], messages=[m1, m2])
+        obj = i.to_python(messages=True)
         self.assertEqual(len(obj['messages']), 2)
         
     def test_to_python_detail(self):
@@ -280,10 +281,10 @@ class IncidentModelTestCase(unittest.TestCase):
         s = datetime.datetime.now() - datetime.timedelta(minutes=1)
         e = datetime.datetime.now() - datetime.timedelta(seconds=1)
         i = Incident.objects.create(created_date=c, start_date=s, end_date=e)
-        obj = i.to_python(messages=True)
+        obj = i.to_python(detail=True)
         
         # make sure all the keys in the messages view are present
-        keys = ['id', 'title', 'api_url', 'status', 'start_date', 'latest_message', 'end_date', 'created_date']
+        keys = ['id', 'title', 'api_url', 'affected_service_ids', 'status', 'start_date', 'latest_message', 'end_date', 'created_date']
         self.assertItemsEqual(keys, obj.keys())
         
         self.assertEqual(obj['created_date'], format_date(c))

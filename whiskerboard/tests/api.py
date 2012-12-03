@@ -59,12 +59,12 @@ class ServiceAPITestCase(unittest.TestCase):
     def test_root_post_valid_data_status(self):
         # HTTP 201 for POST /api/v1/services with valid data
         r = self.client.post('/api/v1/services', content='{service_name: "A Service"}', content_type='application/json;charset=utf-8')
-        self.assertEqual(r.status_code, 201, 'POST (with valid data) service endpoint returns HTTP 405')
+        self.assertEqual(r.status_code, 201, 'POST (with valid data) service endpoint returns HTTP 201')
         
     def test_root_post_invalid_data_status(self):
         # HTTP 400 for POST /api/v1/services with invalid data
         r = self.client.post('/api/v1/services', content='{thing: "value"}')
-        self.assertEqual(r.status_code, 201, 'POST (with valid data) service endpoint returns HTTP 405')
+        self.assertEqual(r.status_code, 400, 'POST (with invalid data) service endpoint returns HTTP 400')
 
     def test_root_delete_status(self):
         # HTTP 405 for DELETE /api/v1/services
@@ -95,8 +95,8 @@ class ServiceAPITestCase(unittest.TestCase):
     def test_instance_put_content(self):
         self.client.put('/api/v1/services/' + str(self.services[0].id), content='{service_name: "New A Name"}', content_type="application/json;charset=utf-8")
 
-        services = json.loads(self.client.get('/api/v1/services/').content)["services"]
-        self.assertEquals(services[0]["id"], self.services[0].id)
+        service = json.loads(self.client.get('/api/v1/services/' + str(self.services[0].id)).content)
+        self.assertEquals(self.services[0].service_name, service['name'])
 
     def test_root_post_content(self):
         r = self.client.post('/api/v1/services/', content='{"service_name": "Test Service", "description": "Test description"}', content_type="application/json;charset=utf-8")
@@ -130,13 +130,11 @@ class ServiceAPITestCase(unittest.TestCase):
         r = self.client.delete('/api/v1/services/' + str(s.id))
         self.assertIn(str(s.id), r.content)
         
-    def test_root_get_content_after_delete(self):
+    def test_instance_deleted(self):
         s = Service.objects.create(service_name='A Service for Deletion')
         self.client.delete('/api/v1/services/' + str(s.id))
-        services = json.loads(self.client.get('/api/v1/services').content)["services"]
-        # go through all the services from the responce and make sure the deleted one is not in it
-        for service in services:
-            self.assertFalse(s.id, service["id"])
+        r = self.client.get('/api/v1/services/' + str(s.id))
+        self.assertEqual(r.status_code, 404)
 
 class IncidentAPITestCase(unittest.TestCase):
     def setUp(self):
@@ -193,7 +191,7 @@ class IncidentAPITestCase(unittest.TestCase):
         incidents = json.loads(self.client.get('/api/v1/incidents').content)["incidents"]
         # go through all the services from the responce and make sure the deleted one is not in it
         for incident in incidents:
-            self.assertFalse(self.incidents[0].id, incident["id"])
+            self.assertNotEqual(unicode(self.incidents[0].id), incident["id"])
 
     def test_root_post_valid_data_content(self):
         r = self.client.post('/api/v1/incidents/', content='{"service_ids": ["' + str(self.services[0].id) + '"], "title": "test incident", "message": "test message", "status": "down", "start_date": "2012-03-12T10:36Z"}', content_type="application/json;charset=utf-8")
@@ -213,7 +211,7 @@ class IncidentAPITestCase(unittest.TestCase):
         self.client.put('/api/v1/incidents/' + str(self.incidents[0].id), content='{"message": "ITS DOWN"}', content_type="application/json;charset=utf-8")
         
         incidents = json.loads(self.client.get('/api/v1/incidents/').content)["incidents"]
-        self.assertEquals(incidents[0]["id"], self.incidents[0].id)
+        self.assertEquals(incidents[0]["id"], str(self.incidents[0].id))
 
 class StatusAPITestCase(unittest.TestCase):
     def setUp(self):
