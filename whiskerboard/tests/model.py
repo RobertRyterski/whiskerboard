@@ -4,6 +4,8 @@ from django.test.client import Client
 from django.utils import unittest
 from django.utils import simplejson as json
 
+from mongoengine.base import ValidationError
+
 from mock import patch
 
 from whiskerboard.models import Service, Incident, Message, format_date
@@ -111,8 +113,12 @@ class ServiceModelTestCase(unittest.TestCase):
         obj = s.to_python(past=True)
         
 
-    # def test_from_python(self):
-        # pass
+    def test_from_python(self):
+        s = Service.objects.create(service_name='Test Service', description='Test Service', tags=['a', 'b'])
+        s.from_python(service_name='name', description='description', tags=['tags'])
+        self.assertEqual(s.service_name, 'name')
+        self.assertEqual(s.description, 'description')
+        self.assertEqual(s.tags, ['tags'])
     
     # make_slug is defined in save
     def test_make_slug_on_save(self):
@@ -229,11 +235,90 @@ class IncidentModelTestCase(unittest.TestCase):
         i = Incident(title='An Incident')
         self.assertEqual(str('An Incident'), i.__unicode__())
         
-    def test_to_python(self):
-        pass
+    def test_to_python_base(self):
+        s = Service.objects.create(service_name='A Service')
+        t = datetime.datetime.now()
+        m1 = Message(message='a message', timestamp=t, status='ok')
+        t = t - datetime.timedelta(days=1)
+        m2 = Message(message='b message', timestamp=t, status='down')
+        i = Incident.objects.create(title='An Incident', services=[s], messages=[m1, m2])
+        obj = i.to_python()
         
-    def test_from_python(self):
-        pass
+        # make sure all the keys in the standard view are present
+        keys = ['id', 'title', 'api_url', 'status', 'start_date']
+        self.assertItemsEqual(keys, obj.keys())
+        
+        self.assertEqual(obj['id'], str(i.pk))
+        self.assertEqual(obj['api_url'], i.get_api_url(1))
+        self.assertEqual(obj['title'], i.title)
+        self.assertItemsEqual(obj['affected_service_ids'], [str(s.pk)])
+        self.assertEqual(obj['status'], 'ok')
+        self.assertEqual(obj['start_date'], None)
+        
+    def test_to_python_messages(self):
+        i = Incident()
+        obj = i.to_python(messages=True)
+        
+        # make sure all the keys in the messages view are present
+        keys = ['id', 'title', 'api_url', 'messages']
+        self.assertItemsEqual(keys, obj.keys())
+        
+        # empty messages
+        self.assertEqual(i.to_python(messages=True)['messages'], None)
+        
+        # with messages
+        s = Service.objects.create(service_name='A Service')
+        t = datetime.datetime.now()
+        m1 = Message(message='a message', timestamp=t, status='ok')
+        t = t - datetime.timedelta(days=1)
+        m2 = Message(message='b message', timestamp=t, status='down')
+        i = Incident.objects.create(title='An Incident', services=[s], messages=[m1, m2])
+        self.assertEqual(len(obj['messages']), 2)
+        
+    def test_to_python_detail(self):
+        c = datetime.datetime.now() - datetime.timedelta(hours=1)
+        s = datetime.datetime.now() - datetime.timedelta(minutes=1)
+        e = datetime.datetime.now() - datetime.timedelta(seconds=1)
+        i = Incident.objects.create(created_date=c, start_date=s, end_date=e)
+        obj = i.to_python(messages=True)
+        
+        # make sure all the keys in the messages view are present
+        keys = ['id', 'title', 'api_url', 'status', 'start_date', 'latest_message', 'end_date', 'created_date']
+        self.assertItemsEqual(keys, obj.keys())
+        
+        self.assertEqual(obj['created_date'], format_date(c))
+        self.assertEqual(obj['start_date'], format_date(s))
+        self.assertEqual(obj['end_date'], format_date(e))
+        
+    def test_from_python_base(self):
+        c = datetime.datetime.now() - datetime.timedelta(hours=1)
+        s = datetime.datetime.now() - datetime.timedelta(minutes=1)
+        e = datetime.datetime.now() - datetime.timedelta(seconds=1)
+        i = Incident(title='a', created_date=c, start_date=s, end_date=e)
+        
+        c = datetime.datetime.now() - datetime.timedelta(hours=2)
+        s = datetime.datetime.now() - datetime.timedelta(minutes=2)
+        e = datetime.datetime.now() - datetime.timedelta(seconds=2)
+        
+        try:
+            i.from_python(title='new', created_date=c, start_date=s, end_date=e)
+        except ValidationError as e:
+            self.fail('Validation error on basic test of Incident.from_python: ' + e.message)
+        
+        self.assertEqual(i.title, 'new')
+        self.assertEqual(i.created_date, c)
+        self.assertEqual(i.start_date, s)
+        self.assertEqual(i.end_date, e)
+        
+    def test_from_python_with_message(self):
+        i = Incident(title='a')
+        
+        try:
+            i.from_python(message='m', status='ok')
+        except ValidationError as e:
+            self.fail('Validation error on message test of Incident.from_python: ' + e.message)
+            
+        self.assertEqual(len(i.messages), 1)
         
     def test_message_order_after_save(self):
         m1 = Message(message='3', status='down', timestamp=datetime.datetime.now() - datetime.timedelta(hours=1))
